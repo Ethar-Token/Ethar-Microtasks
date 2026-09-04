@@ -179,35 +179,97 @@
     </div>
 
 
-    <script>
-        const form = document.getElementById("signupForm");
-        const message = document.getElementById("message");
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        form.addEventListener("submit", function(event) {
+<script>
+    const SUPABASE_URL = "https://yrighidayswskssbgwcd.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyaWdoaWRheXN3c2tzc2Jnd2NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NDY3NDIsImV4cCI6MjEwNDAyMjc0Mn0.MEsBW0iw-uRcHyzFg4ZHU9JSbHkZH0AIMK-Di7iFGlQ";
 
-            event.preventDefault();
+    const supabase = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
-            const password = document.getElementById("password").value;
-            const confirmPassword = document.getElementById("confirmPassword").value;
 
-            if (password.length < 8) {
-                message.textContent = "Password must be at least 8 characters.";
+    const form = document.getElementById("signupForm");
+    const message = document.getElementById("message");
+
+
+    form.addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        const name = document.getElementById("name").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+
+
+        if (password.length < 8) {
+            message.textContent = "Password must be at least 8 characters.";
+            message.style.color = "#c04a68";
+            return;
+        }
+
+
+        if (password !== confirmPassword) {
+            message.textContent = "Passwords do not match.";
+            message.style.color = "#c04a68";
+            return;
+        }
+
+
+        message.textContent = "Creating your account...";
+        message.style.color = "#8b6a73";
+
+
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    name: name
+                }
+            }
+        });
+
+
+        if (error) {
+            message.textContent = error.message;
+            message.style.color = "#c04a68";
+            return;
+        }
+
+
+        if (data.user) {
+
+            const { error: profileError } = await supabase
+                .from("profiles")
+                .insert({
+                    id: data.user.id,
+                    name: name,
+                    email: email,
+                    wallet_balance: 0.00
+                });
+
+
+            if (profileError) {
+                message.textContent = "Account created, but profile setup failed.";
                 message.style.color = "#c04a68";
+
+                console.error(profileError);
                 return;
             }
 
-            if (password !== confirmPassword) {
-                message.textContent = "Passwords do not match.";
-                message.style.color = "#c04a68";
-                return;
-            }
 
-            message.textContent = "Looks good!";
+            message.textContent = "Account created successfully!";
             message.style.color = "#6b9b72";
 
-            // Supabase signup will be added here.
-        });
-    </script>
+            form.reset();
+        }
+
+    });
+</script>
 
 </body>
 </html>
