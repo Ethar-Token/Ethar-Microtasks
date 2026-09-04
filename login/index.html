@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -90,6 +91,23 @@
             background: #df88a4;
         }
 
+        .login-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .forgot-link {
+            text-align: right;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .forgot-link a {
+            color: #a34d68;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
         .signup-link {
             text-align: center;
             margin-top: 18px;
@@ -132,7 +150,6 @@
                 >
             </div>
 
-
             <div class="form-group">
                 <label for="password">Password</label>
 
@@ -144,6 +161,9 @@
                 >
             </div>
 
+            <div class="forgot-link">
+                <a href="../forgot-password/">Forgot password?</a>
+            </div>
 
             <button type="submit" class="login-button">
                 Log In
@@ -153,7 +173,6 @@
 
         </form>
 
-
         <div class="signup-link">
             Don't have an account?
             <a href="../signup/">Create an account</a>
@@ -162,29 +181,99 @@
     </div>
 
 
-    <script>
-        const form = document.getElementById("loginForm");
-        const message = document.getElementById("message");
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        form.addEventListener("submit", function(event) {
+<script>
 
-            event.preventDefault();
+    const supabaseUrl = "https://yrighidayswskssbgwcd.supabase.co";
 
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
+    const supabaseKey = "YOUR_EXISTING_ANON_KEY";
 
-            if (!email || !password) {
-                message.textContent = "Please enter your email and password.";
+    const client = window.supabase.createClient(
+        supabaseUrl,
+        supabaseKey
+    );
+
+
+    const form = document.getElementById("loginForm");
+    const message = document.getElementById("message");
+    const loginButton = document.querySelector(".login-button");
+
+
+    form.addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+
+
+        if (!email || !password) {
+
+            message.textContent = "Please enter your email and password.";
+            message.style.color = "#c04a68";
+
+            return;
+        }
+
+
+        // Change button while logging in
+        loginButton.textContent = "Logging in...";
+        loginButton.disabled = true;
+
+        message.textContent = "";
+
+
+        try {
+
+            const { data, error } = await client.auth.signInWithPassword({
+
+                email: email,
+                password: password
+
+            });
+
+
+            if (error) {
+
+                message.textContent = error.message;
                 message.style.color = "#c04a68";
+
+                loginButton.textContent = "Log In";
+                loginButton.disabled = false;
+
                 return;
             }
 
-            message.textContent = "Looks good!";
+
+            // Login successful
+            message.textContent = "Login successful!";
             message.style.color = "#6b9b72";
 
-            // Supabase login will be added here.
-        });
-    </script>
+            loginButton.textContent = "Logged In";
+
+
+            // Send user to main page
+            window.location.href = "../";
+
+
+        } catch (err) {
+
+            console.error(err);
+
+            message.textContent = "Something went wrong. Please try again.";
+            message.style.color = "#c04a68";
+
+            loginButton.textContent = "Log In";
+            loginButton.disabled = false;
+
+        }
+
+    });
+
+</script>
 
 </body>
 </html>
+```
