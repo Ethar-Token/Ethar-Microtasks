@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sign Up | MicroTasks</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff7fa;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .signup-box {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid #f1c8d4;
+            box-shadow: 0 5px 20px rgba(150, 80, 100, 0.08);
+        }
+
+        .signup-box h1 {
+            text-align: center;
+            color: #4a3038;
+            font-size: 25px;
+            margin-bottom: 8px;
+        }
+
+        .signup-box p {
+            text-align: center;
+            color: #8b6a73;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #68414d;
+            margin-bottom: 7px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e7c1cd;
+            border-radius: 9px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #e99ab2;
+        }
+
+        .signup-button {
+            width: 100%;
+            border: none;
+            background: #e99ab2;
+            color: white;
+            padding: 13px;
+            border-radius: 9px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .signup-button:hover {
+            background: #df88a4;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 14px;
+            color: #8b6a73;
+        }
+
+        .login-link a {
+            color: #a34d68;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="signup-box">
+
+        <h1>Create Account</h1>
+
+        <p>Sign up to start completing tasks.</p>
+
+        <form id="signupForm">
+
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input
+                    type="text"
+                    id="name"
+                    placeholder="Your name"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Your email"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="At least 8 characters"
+                    minlength="8"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input
+                    type="password"
+                    id="confirmPassword"
+                    placeholder="Enter password again"
+                    minlength="8"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="signup-button">
+                Sign Up
+            </button>
+
+            <div id="message" class="message"></div>
+
+        </form>
+
+        <div class="login-link">
+            Already have an account?
+            <a href="../login/">Log in</a>
+        </div>
+
+    </div>
+
+
+    <script>
+        const form = document.getElementById("signupForm");
+        const message = document.getElementById("message");
+
+        form.addEventListener("submit", function(event) {
+
+            event.preventDefault();
+
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+
+            if (password.length < 8) {
+                message.textContent = "Password must be at least 8 characters.";
+                message.style.color = "#c04a68";
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                message.textContent = "Passwords do not match.";
+                message.style.color = "#c04a68";
+                return;
+            }
+
+            message.textContent = "Looks good!";
+            message.style.color = "#6b9b72";
+
+            // Supabase signup will be added here.
+        });
+    </script>
+
+</body>
+</html>
