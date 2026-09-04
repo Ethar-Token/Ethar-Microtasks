@@ -225,7 +225,7 @@
                 Wallet
             </button>
 
-            <button class="header-button logout">
+            <button class="header-button logout" id="logoutButton">
                 Logout
             </button>
 
@@ -542,6 +542,29 @@
         supabaseUrl,
         supabaseKey
     );
+
+
+    const logoutButton = document.getElementById("logoutButton");
+
+    logoutButton.addEventListener("click", async function () {
+
+        logoutButton.textContent = "Logging out...";
+        logoutButton.disabled = true;
+
+        const { error } = await client.auth.signOut();
+
+        if (error) {
+            console.error("Logout error:", error);
+
+            logoutButton.textContent = "Logout";
+            logoutButton.disabled = false;
+
+            alert("Unable to log out. Please try again.");
+            return;
+        }
+
+        window.location.href = "../login/";
+    });
 
 
     async function loadDashboard() {
