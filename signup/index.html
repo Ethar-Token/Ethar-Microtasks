@@ -233,7 +233,34 @@
         signupButton.disabled = true;
 
 
-        message.textContent = "";       
+        message.textContent = "";   
+
+        const { data: emailExists, error: checkError } =
+            await client.rpc("email_exists", {
+                check_email: email
+            });
+
+        if (checkError) {
+            message.textContent = "Unable to check email. Please try again.";
+            message.style.color = "#c04a68";
+
+            signupButton.textContent = "Sign Up";
+            signupButton.disabled = false;
+
+            console.error(checkError);
+
+            return;
+        }
+
+        if (emailExists) {
+            message.textContent = "Email already registered. Please log in.";
+            message.style.color = "#c04a68";
+
+            signupButton.textContent = "Sign Up";
+            signupButton.disabled = false;
+
+            return;
+        }
 
 
         const { data, error } = await client.auth.signUp({
