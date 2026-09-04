@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Forgot Password | MicroTasks</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff7fa;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .forgot-box {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid #f1c8d4;
+            box-shadow: 0 5px 20px rgba(150, 80, 100, 0.08);
+        }
+
+        .forgot-box h1 {
+            text-align: center;
+            color: #4a3038;
+            font-size: 25px;
+            margin-bottom: 8px;
+        }
+
+        .forgot-box p {
+            text-align: center;
+            color: #8b6a73;
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #68414d;
+            margin-bottom: 7px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e7c1cd;
+            border-radius: 9px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #e99ab2;
+        }
+
+        .reset-button {
+            width: 100%;
+            border: none;
+            background: #e99ab2;
+            color: white;
+            padding: 13px;
+            border-radius: 9px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .reset-button:hover {
+            background: #df88a4;
+        }
+
+        .reset-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 14px;
+            color: #8b6a73;
+        }
+
+        .login-link a {
+            color: #a34d68;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="forgot-box">
+
+        <h1>Forgot Password?</h1>
+
+        <p>
+            Enter your email address and we'll send you a link
+            to reset your password.
+        </p>
+
+
+        <form id="forgotForm">
+
+            <div class="form-group">
+
+                <label for="email">Email</label>
+
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Your email"
+                    required
+                >
+
+            </div>
+
+
+            <button type="submit" class="reset-button" id="resetButton">
+                Send Reset Link
+            </button>
+
+
+            <div id="message" class="message"></div>
+
+        </form>
+
+
+        <div class="login-link">
+
+            Remember your password?
+            <a href="../login/">Log in</a>
+
+        </div>
+
+    </div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+    const supabaseUrl = "https://yrighidayswskssbgwcd.supabase.co";
+
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyaWdoaWRheXN3c2tzc2Jnd2NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NDY3NDIsImV4cCI6MjEwNDAyMjc0Mn0.MEsBW0iw-uRcHyzFg4ZHU9JSbHkZH0AIMK-Di7iFGlQ";
+
+
+    const client = window.supabase.createClient(
+        supabaseUrl,
+        supabaseKey
+    );
+
+
+    const form = document.getElementById("forgotForm");
+    const message = document.getElementById("message");
+    const resetButton = document.getElementById("resetButton");
+
+
+    form.addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+
+        const email = document.getElementById("email").value.trim();
+
+
+        if (!email) {
+
+            message.textContent = "Please enter your email.";
+            message.style.color = "#c04a68";
+
+            return;
+        }
+
+
+        // Change button while processing
+        resetButton.textContent = "Checking...";
+        resetButton.disabled = true;
+
+        message.textContent = "";
+
+
+        try {
+
+            // Check whether email exists
+            const { data: emailExists, error: checkError } =
+                await client.rpc("email_exists", {
+                    check_email: email
+                });
+
+
+            // Error checking email
+            if (checkError) {
+
+                console.error("Email check error:", checkError);
+
+                message.textContent =
+                    "Unable to check email. Please try again.";
+
+                message.style.color = "#c04a68";
+
+                resetButton.textContent = "Send Reset Link";
+                resetButton.disabled = false;
+
+                return;
+            }
+
+
+            // Email does not exist
+            if (!emailExists) {
+
+                message.textContent =
+                    "This email is not registered.";
+
+                message.style.color = "#c04a68";
+
+                resetButton.textContent = "Send Reset Link";
+                resetButton.disabled = false;
+
+                return;
+            }
+
+
+            // Email exists — send password reset email
+            resetButton.textContent = "Sending...";
+
+
+            const { error } =
+                await client.auth.resetPasswordForEmail(
+                    email,
+                    {
+                        redirectTo:
+                            "https://YOUR-GITHUB-USERNAME.github.io/YOUR-REPOSITORY/reset-password/"
+                    }
+                );
+
+
+            // Reset email failed
+            if (error) {
+
+                console.error("Reset email error:", error);
+
+                message.textContent = error.message;
+                message.style.color = "#c04a68";
+
+                resetButton.textContent = "Send Reset Link";
+                resetButton.disabled = false;
+
+                return;
+            }
+
+
+            // Success
+            message.textContent =
+                "Password reset link sent! Check your email.";
+
+            message.style.color = "#6b9b72";
+
+            resetButton.textContent = "Email Sent";
+
+
+        } catch (error) {
+
+            console.error("Forgot password error:", error);
+
+            message.textContent =
+                "Something went wrong. Please try again.";
+
+            message.style.color = "#c04a68";
+
+            resetButton.textContent = "Send Reset Link";
+            resetButton.disabled = false;
+
+        }
+
+    });
+
+</script>
+
+</body>
+</html>
