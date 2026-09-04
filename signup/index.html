@@ -259,18 +259,6 @@
         }
 
 
-        if (data.user) {
-
-            const { error: profileError } = await supabase
-                .from("profiles")
-                .insert({
-                    id: data.user.id,
-                    name: name,
-                    email: email,
-                    wallet_balance: 0.00
-                });
-
-
             if (profileError) {
                 message.textContent = "Account created, but profile setup failed.";
                 message.style.color = "#c04a68";
