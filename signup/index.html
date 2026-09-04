@@ -258,26 +258,13 @@
             return;
         }
 
+         // sign up successful
+         message.textContent = "Account created successfully!";
+         message.style.color = "#6b9b72";
 
-            if (profileError) {
-                message.textContent = "Account created, but profile setup failed.";
-                message.style.color = "#c04a68";
+         signupButton.textContent = "Signed Up";
 
-                signupButton.textContent = "Sign Up";
-                signupButton.disabled = false;
-
-                console.error(profileError);
-                return;
-            }
-
-
-            message.textContent = "Account created successfully!";
-            message.style.color = "#6b9b72";
-
-            signupButton.textContent = "Signed Up";
-
-            form.reset();
-        }
+         form.reset();
 
     });
 </script>
