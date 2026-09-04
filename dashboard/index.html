@@ -564,7 +564,7 @@
         const { data: profile, error: profileError } =
             await client
                 .from("profiles")
-                .select("names, email, wallet_balance")
+                .select("name, email, wallet_balance")
                 .eq("id", user.id)
                 .single();
 
@@ -578,7 +578,7 @@
 
 
         // First name for greeting
-        const firstName = profile.names
+        const firstName = profile.name
             ? profile.names.trim().split(" ")[0]
             : "User";
 
