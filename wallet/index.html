@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Wallet - MicroTasks</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #fff7fa;
+            color: #4a3038;
+        }
+
+        .header {
+            background: #ffd6e3;
+            padding: 18px 20px;
+            border-bottom: 1px solid #f3b8ca;
+        }
+
+        .header-inner {
+            max-width: 700px;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-button {
+            border: none;
+            background: none;
+            font-size: 28px;
+            color: #68414d;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 25px auto;
+            padding: 0 15px;
+        }
+
+        .balance-card {
+            background: white;
+            border: 1px solid #f1c8d4;
+            border-radius: 12px;
+            padding: 25px 20px;
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .balance-label {
+            font-size: 14px;
+            color: #80606a;
+        }
+
+        .balance {
+            font-size: 32px;
+            font-weight: bold;
+            margin-top: 8px;
+            color: #4a3038;
+        }
+
+        .minimum {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #80606a;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #f1c8d4;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 18px;
+        }
+
+        .card h2 {
+            margin: 0 0 18px;
+            font-size: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 7px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dfc3cc;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            margin-bottom: 12px;
+        }
+
+        input:focus {
+            border-color: #e99ab2;
+        }
+
+        .withdraw-button {
+            width: 100%;
+            border: none;
+            background: #e99ab2;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .withdraw-button:disabled {
+            background: #e6cbd3;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 12px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success {
+            color: #25834a;
+        }
+
+        .error {
+            color: #c0395a;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #f1dce2;
+            white-space: nowrap;
+        }
+
+        th {
+            color: #68414d;
+            font-weight: 600;
+        }
+
+        td {
+            color: #5d444c;
+        }
+
+        .status {
+            font-weight: 600;
+        }
+
+        .support {
+            text-align: center;
+            font-size: 13px;
+            color: #80606a;
+            margin: 25px 0 35px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="header-inner">
+
+            <button
+                class="back-button"
+                id="backButton">
+                ←
+            </button>
+
+            <h1>Wallet</h1>
+
+        </div>
+    </div>
+
+
+    <div class="container">
+
+        <div class="balance-card">
+
+            <div class="balance-label">
+                Current Balance
+            </div>
+
+            <div class="balance">
+                $<span id="walletBalance">0.00</span>
+            </div>
+
+            <div class="minimum">
+                Minimum withdrawal: $10.00
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>Withdraw</h2>
+
+            <label for="withdrawAmount">
+                Amount
+            </label>
+
+            <input
+                type="number"
+                id="withdrawAmount"
+                placeholder="Enter amount"
+                min="10"
+                step="0.01">
+
+            <button
+                class="withdraw-button"
+                id="withdrawButton">
+                Withdraw
+            </button>
+
+            <div
+                class="message"
+                id="withdrawMessage">
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>Withdrawal History</h2>
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Withdrawal</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="withdrawalTable">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <div class="support">
+            For help and account deletion requests,
+            email support@ethartoken.com
+        </div>
+
+    </div>
+
+
+<script>
+
+const supabaseUrl =
+    "https://yrighidayswskssbgwcd.supabase.co";
+
+const supabaseKey =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyaWdoaWRheXN3c2tzc2Jnd2NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NDY3NDIsImV4cCI6MjEwNDAyMjc0Mn0.MEsBW0iw-uRcHyzFg4ZHU9JSbHkZH0AIMK-Di7iFGlQ";
+
+const client =
+    window.supabase.createClient(
+        supabaseUrl,
+        supabaseKey
+    );
+
+
+const walletBalance =
+    document.getElementById("walletBalance");
+
+const withdrawAmount =
+    document.getElementById("withdrawAmount");
+
+const withdrawButton =
+    document.getElementById("withdrawButton");
+
+const withdrawMessage =
+    document.getElementById("withdrawMessage");
+
+const withdrawalTable =
+    document.getElementById("withdrawalTable");
+
+
+function showMessage(text, type) {
+
+    withdrawMessage.textContent = text;
+
+    withdrawMessage.className =
+        "message " + type;
+
+    withdrawMessage.style.display =
+        "block";
+}
+
+
+// Load wallet
+
+async function loadWallet() {
+
+    const {
+        data: { user },
+        error: authError
+    } = await client.auth.getUser();
+
+
+    if (authError || !user) {
+
+        window.location.href =
+            "../login/";
+
+        return;
+    }
+
+
+    const {
+        data: profile,
+        error: profileError
+    } = await client
+        .from("profiles")
+        .select("wallet_balance, payment_method")
+        .eq("id", user.id)
+        .single();
+
+
+    if (profileError) {
+
+        console.error(profileError);
+
+        return;
+    }
+
+
+    walletBalance.textContent =
+        Number(profile.wallet_balance || 0).toFixed(2);
+
+
+    loadWithdrawals(user.id);
+}
+
+
+// Load withdrawal history
+
+async function loadWithdrawals(userId) {
+
+    const {
+        data,
+        error
+    } = await client
+        .from("withdrawals")
+        .select("amount, created_at, status")
+        .eq("user_id", userId)
+        .order("created_at", {
+            ascending: false
+        });
+
+
+    if (error) {
+
+        console.error(error);
+
+        return;
+    }
+
+
+    withdrawalTable.innerHTML = "";
+
+
+    if (!data || data.length === 0) {
+
+        withdrawalTable.innerHTML = `
+            <tr>
+                <td colspan="4">
+                    No withdrawals yet.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    const {
+        data: { user }
+    } = await client.auth.getUser();
+
+
+    const {
+        data: profile
+    } = await client
+        .from("profiles")
+        .select("payment_method")
+        .eq("id", user.id)
+        .single();
+
+
+    data.forEach(function (withdrawal) {
+
+        const row =
+            document.createElement("tr");
+
+
+        const date =
+            new Date(
+                withdrawal.created_at
+            ).toLocaleDateString();
+
+
+        const method =
+            profile.payment_method === "paypal"
+                ? "PayPal"
+                : profile.payment_method === "usdt"
+                    ? "USDT (TRC-20)"
+                    : "Not set";
+
+
+        row.innerHTML = `
+            <td>${date}</td>
+            <td>$${Number(withdrawal.amount).toFixed(2)}</td>
+            <td>${method}</td>
+            <td class="status">${withdrawal.status}</td>
+        `;
+
+
+        withdrawalTable.appendChild(row);
+
+    });
+
+}
+
+
+// Request withdrawal
+
+withdrawButton.addEventListener(
+    "click",
+    async function () {
+
+        const amount =
+            Number(withdrawAmount.value);
+
+
+        if (!amount || amount < 10) {
+
+            showMessage(
+                "Minimum withdrawal is $10.00.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        withdrawButton.textContent =
+            "Processing...";
+
+        withdrawButton.disabled =
+            true;
+
+
+        const {
+            data,
+            error
+        } = await client.rpc(
+            "request_withdrawal",
+            {
+                p_amount: amount
+            }
+        );
+
+
+        if (error) {
+
+            console.error(error);
+
+            showMessage(
+                error.message,
+                "error"
+            );
+
+            withdrawButton.textContent =
+                "Withdraw";
+
+            withdrawButton.disabled =
+                false;
+
+            return;
+        }
+
+
+        withdrawAmount.value = "";
+
+
+        showMessage(
+            "Withdrawal request submitted successfully.",
+            "success"
+        );
+
+
+        await loadWallet();
+
+
+        withdrawButton.textContent =
+            "Withdraw";
+
+        withdrawButton.disabled =
+            false;
+
+    }
+);
+
+
+// Back button
+
+document
+    .getElementById("backButton")
+    .addEventListener(
+        "click",
+        function () {
+
+            window.location.href =
+                "../dashboard/";
+
+        }
+    );
+
+
+loadWallet();
+
+</script>
+
+</body>
+</html>
