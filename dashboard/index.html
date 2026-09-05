@@ -912,9 +912,6 @@ doneButton.addEventListener("click", async function () {
 
     const { data, error } = await client.rpc(
         "complete_website_task",
-        {
-            p_task_id: currentTaskId
-        }
     );
 
 
