@@ -426,7 +426,7 @@ async function loadAccount() {
     const { data: profile, error } =
         await client
             .from("profiles")
-            .select("name, email")
+            .select("name, email, payment_method, payment_details")
             .eq("id", user.id)
             .single();
 
@@ -445,12 +445,38 @@ async function loadAccount() {
     }
 
 
-    nameInput.value =
-        profile.name || "";
+    nameInput.value = profile.name || "";
+    emailInput.value = profile.email || user.email || "";
 
-    emailInput.value =
-        profile.email || user.email || "";
+    if (profile.payment_method) {
 
+        paymentMethod.value = profile.payment_method;
+
+        paymentDetails.style.display = "block";
+
+        paymentValue.value =
+            profile.payment_details || "";
+
+        if (profile.payment_method === "paypal") {
+
+            paymentLabel.textContent = "PayPal Email";
+            paymentValue.placeholder = "Enter your PayPal email";
+            paymentValue.type = "email";
+
+        } else if (profile.payment_method === "usdt") {
+
+            paymentLabel.textContent =
+                "USDT (TRC-20) Wallet Address";
+
+            paymentValue.placeholder =
+                "Enter your TRC-20 wallet address";
+
+            paymentValue.type = "text";
+        }
+    }
+
+
+    
 }
 
 
