@@ -166,6 +166,123 @@
             background: #df88a4;
         }
 
+
+        /* =========================
+           WEBSITE TASK WINDOW
+        ========================= */
+
+        .task-window {
+            position: fixed;
+            inset: 0;
+            background: rgba(40, 25, 30, 0.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+
+        .task-window-content {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .task-window-header {
+            height: 55px;
+            flex-shrink: 0;
+            background: #ffd6e3;
+            border-bottom: 1px solid #f3b8ca;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+        }
+
+        .task-back {
+            background: none;
+            border: none;
+            color: #68414d;
+            font-size: 25px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .task-window-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #4a3038;
+            margin-left: 5px;
+        }
+
+        .task-website {
+            flex: 1;
+            min-height: 0;
+            border: none;
+            width: 100%;
+        }
+
+        .task-window-footer {
+            height: 65px;
+            flex-shrink: 0;
+            background: white;
+            border-top: 1px solid #f1c8d4;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 10px 15px;
+        }
+
+        .done-button,
+        .next-button {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .done-button {
+            background: #e99ab2;
+            color: white;
+        }
+
+        .done-button:disabled {
+            background: #e6cbd3;
+            cursor: not-allowed;
+        }
+
+        .next-button {
+            background: #e99ab2;
+            color: white;
+        }
+
+        .next-button:disabled {
+            background: #e6cbd3;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 700px) {
+
+            .task-window {
+                padding: 0;
+            }
+
+            .task-window-content {
+                height: 100vh;
+                border-radius: 0;
+            }
+
+        }
+
+
         /* =========================
            MOBILE
         ========================= */
@@ -295,7 +412,7 @@
                         $0.01 - $0.05
                     </span>
 
-                    <button class="task-button">
+                    <button class="task-button" id="startWebsiteTask">
                         Start Task
                     </button>
 
@@ -619,7 +736,253 @@
 
 
     loadDashboard();
+
+
+/* =========================
+   WEBSITE TASKS
+========================= */
+
+const startWebsiteTask =
+    document.getElementById("startWebsiteTask");
+
+const taskWindow =
+    document.getElementById("taskWindow");
+
+const taskBack =
+    document.getElementById("taskBack");
+
+const taskWebsite =
+    document.getElementById("taskWebsite");
+
+const doneButton =
+    document.getElementById("doneButton");
+
+const nextButton =
+    document.getElementById("nextButton");
+
+
+let websiteTasks = [];
+let currentTaskIndex = 0;
+let currentTaskId = null;
+let taskCompleted = false;
+
+
+/* START TASK */
+
+startWebsiteTask.addEventListener("click", async function () {
+
+    startWebsiteTask.textContent = "Loading...";
+    startWebsiteTask.disabled = true;
+
+    try {
+
+        const { data, error } = await client
+            .from("website_tasks")
+            .select("id, url")
+            .eq("active", true)
+            .order("id", { ascending: true });
+
+
+        if (error) {
+            console.error(error);
+            alert("Unable to load tasks.");
+            return;
+        }
+
+
+        if (!data || data.length === 0) {
+            alert("There are no website tasks available.");
+            return;
+        }
+
+
+        websiteTasks = data;
+        currentTaskIndex = 0;
+
+        taskWindow.style.display = "flex";
+
+        loadWebsiteTask();
+
+    } finally {
+
+        startWebsiteTask.textContent = "Start Task";
+        startWebsiteTask.disabled = false;
+
+    }
+
+});
+
+
+/* LOAD CURRENT WEBSITE */
+
+function loadWebsiteTask() {
+
+    const task = websiteTasks[currentTaskIndex];
+
+    currentTaskId = task.id;
+
+    taskCompleted = false;
+
+    doneButton.disabled = true;
+    nextButton.disabled = true;
+
+    taskWebsite.src = task.url;
+
+}
+
+
+/* WEBSITE REPORTS THAT USER REACHED BOTTOM */
+
+window.addEventListener("message", function (event) {
+
+    if (
+        event.data &&
+        event.data.type === "MICROTASK_BOTTOM_REACHED"
+    ) {
+
+        taskCompleted = true;
+
+        doneButton.disabled = false;
+
+    }
+
+});
+
+
+/* DONE */
+
+doneButton.addEventListener("click", async function () {
+
+    if (!taskCompleted || !currentTaskId) {
+        return;
+    }
+
+
+    doneButton.textContent = "Adding...";
+    doneButton.disabled = true;
+
+
+    const { data, error } = await client.rpc(
+        "complete_website_task",
+        {
+            p_task_id: currentTaskId
+        }
+    );
+
+
+    if (error) {
+
+        console.error(error);
+
+        alert("Unable to complete this task.");
+
+        doneButton.textContent = "Done";
+        doneButton.disabled = false;
+
+        return;
+    }
+
+
+    // Update dashboard wallet
+    document.getElementById("walletBalance").textContent =
+        Number(data).toFixed(2);
+
+
+    doneButton.textContent = "Done ✓";
+
+    nextButton.disabled = false;
+
+});
+
+
+/* NEXT */
+
+nextButton.addEventListener("click", function () {
+
+    if (currentTaskIndex >= websiteTasks.length - 1) {
+
+        alert("You have completed all available websites.");
+
+        return;
+    }
+
+
+    currentTaskIndex++;
+
+    loadWebsiteTask();
+
+});
+
+
+/* BACK TO DASHBOARD */
+
+taskBack.addEventListener("click", function () {
+
+    taskWindow.style.display = "none";
+
+    taskWebsite.src = "about:blank";
+
+    websiteTasks = [];
+    currentTaskIndex = 0;
+    currentTaskId = null;
+    taskCompleted = false;
+
+    doneButton.disabled = true;
+    nextButton.disabled = true;
+
+    doneButton.textContent = "Done";
+
+});
+
 </script>
+
+<!-- WEBSITE TASK WINDOW -->
+
+<div class="task-window" id="taskWindow">
+
+    <div class="task-window-content">
+
+        <div class="task-window-header">
+
+            <button class="task-back" id="taskBack">
+                ←
+            </button>
+
+            <div class="task-window-title">
+                Visit Website
+            </div>
+
+        </div>
+
+
+        <iframe
+            id="taskWebsite"
+            class="task-website"
+            src="about:blank">
+        </iframe>
+
+
+        <div class="task-window-footer">
+
+            <button
+                class="done-button"
+                id="doneButton"
+                disabled>
+                Done
+            </button>
+
+            <button
+                class="next-button"
+                id="nextButton"
+                disabled>
+                Next
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 </body>
 </html>
