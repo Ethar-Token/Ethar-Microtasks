@@ -648,6 +648,54 @@
 
     </main>
 
+<!-- WEBSITE TASK WINDOW -->
+
+<div class="task-window" id="taskWindow">
+
+    <div class="task-window-content">
+
+        <div class="task-window-header">
+
+            <button class="task-back" id="taskBack">
+                ←
+            </button>
+
+            <div class="task-window-title">
+                Visit Website
+            </div>
+
+        </div>
+
+
+        <iframe
+            id="taskWebsite"
+            class="task-website"
+            src="about:blank">
+        </iframe>
+
+
+        <div class="task-window-footer">
+
+            <button
+                class="done-button"
+                id="doneButton"
+                disabled>
+                Done
+            </button>
+
+            <button
+                class="next-button"
+                id="nextButton"
+                disabled>
+                Next
+            </button>
+
+        </div>
+
+    </div>
+
+</div>    
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -935,54 +983,6 @@ taskBack.addEventListener("click", function () {
 });
 
 </script>
-
-<!-- WEBSITE TASK WINDOW -->
-
-<div class="task-window" id="taskWindow">
-
-    <div class="task-window-content">
-
-        <div class="task-window-header">
-
-            <button class="task-back" id="taskBack">
-                ←
-            </button>
-
-            <div class="task-window-title">
-                Visit Website
-            </div>
-
-        </div>
-
-
-        <iframe
-            id="taskWebsite"
-            class="task-website"
-            src="about:blank">
-        </iframe>
-
-
-        <div class="task-window-footer">
-
-            <button
-                class="done-button"
-                id="doneButton"
-                disabled>
-                Done
-            </button>
-
-            <button
-                class="next-button"
-                id="nextButton"
-                disabled>
-                Next
-            </button>
-
-        </div>
-
-    </div>
-
-</div>
 
 </body>
 </html>
