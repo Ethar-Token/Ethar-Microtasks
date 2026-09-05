@@ -827,8 +827,7 @@ startWebsiteTask.addEventListener("click", async function () {
         const { data, error } = await client
             .from("website_tasks")
             .select("id, url")
-            .eq("active", true)
-            .order("id", { ascending: true });
+            .eq("active", true)        
 
 
         if (error) {
@@ -844,7 +843,7 @@ startWebsiteTask.addEventListener("click", async function () {
         }
 
 
-        websiteTasks = data;
+        websiteTasks = data.sort(() => Math.random() - 0.5);
         currentTaskIndex = 0;
 
         taskWindow.style.display = "flex";
@@ -946,15 +945,13 @@ doneButton.addEventListener("click", async function () {
 
 nextButton.addEventListener("click", function () {
 
-    if (currentTaskIndex >= websiteTasks.length - 1) {
+    const randomIndex = Math.floor(
 
-        alert("You have completed all available websites.");
-
-        return;
-    }
+        Math.random() * websiteTasks.length
+    };
 
 
-    currentTaskIndex++;
+    currentTaskIndex = randomIndex;
 
     loadWebsiteTask();
 
