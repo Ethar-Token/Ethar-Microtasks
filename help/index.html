@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Help - ETHAR</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #fff7fa;
+            color: #4a3038;
+        }
+
+        .header {
+            background: #ffd6e3;
+            padding: 18px 20px;
+            border-bottom: 1px solid #f3b8ca;
+        }
+
+        .header-inner {
+            max-width: 700px;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-button {
+            border: none;
+            background: none;
+            font-size: 28px;
+            color: #68414d;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 25px auto;
+            padding: 0 15px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #f1c8d4;
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 18px;
+        }
+
+        .card h2 {
+            margin: 0 0 12px;
+            font-size: 19px;
+        }
+
+        .card p {
+            margin: 0;
+            line-height: 1.6;
+            font-size: 14px;
+            color: #68414d;
+        }
+
+        .services {
+            margin-top: 18px;
+        }
+
+        .service {
+            padding: 14px 0;
+            border-bottom: 1px solid #f3dce3;
+        }
+
+        .service:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .service-title {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+
+        .service-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #80606a;
+        }
+
+        .contact {
+            margin-top: 18px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .contact a,
+        .support a {
+            color: #d86f91;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .field {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 7px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            border: 1px solid #dfc3cc;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 15px;
+            font-family: Arial, sans-serif;
+            outline: none;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #e99ab2;
+        }
+
+        textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        .send-button {
+            width: 100%;
+            border: none;
+            background: #e99ab2;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .send-button:disabled {
+            background: #e6cbd3;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 12px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success {
+            color: #25834a;
+        }
+
+        .error {
+            color: #c0395a;
+        }
+
+        .support {
+            text-align: center;
+            font-size: 13px;
+            color: #80606a;
+            line-height: 1.6;
+            margin: 25px 0 35px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="header-inner">
+
+            <button
+                class="back-button"
+                id="backButton">
+                ←
+            </button>
+
+            <h1>Help</h1>
+
+        </div>
+    </div>
+
+
+    <div class="container">
+
+        <!-- Services -->
+
+        <div class="card">
+
+            <h2>Need Website or Social Media Support?</h2>
+
+            <p>
+                ETHAR can help businesses, developers and creators
+                increase their online presence through a range of
+                digital tasks and promotional activities.
+            </p>
+
+
+            <div class="services">
+
+                <div class="service">
+
+                    <div class="service-title">
+                        🌐 Website Traffic
+                    </div>
+
+                    <div class="service-text">
+                        Get more people visiting your website and
+                        increase your online exposure.
+                    </div>
+
+                </div>
+
+
+                <div class="service">
+
+                    <div class="service-title">
+                        📱 App Testing
+                    </div>
+
+                    <div class="service-text">
+                        Get your apps tested by real users and receive
+                        feedback based on actual user experiences.
+                    </div>
+
+                </div>
+
+
+                <div class="service">
+
+                    <div class="service-title">
+                        ⭐ App Reviews & Ratings
+                    </div>
+
+                    <div class="service-text">
+                        Promote your app and increase visibility through
+                        user reviews and ratings.
+                    </div>
+
+                </div>
+
+
+                <div class="service">
+
+                    <div class="service-title">
+                        👍 Social Media Engagement
+                    </div>
+
+                    <div class="service-text">
+                        Grow your social presence with likes, followers
+                        and comments on your social media pages.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="contact">
+
+                Interested in any of these services?
+
+                Email us at
+                <a href="mailto:info@ethartoken.com">
+                    info@ethartoken.com
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- Contact Form -->
+
+        <div class="card">
+
+            <h2>Contact Us</h2>
+
+            <p style="margin-bottom: 18px;">
+                Have another question or need assistance?
+                Send us a message and our team will get back to you.
+            </p>
+
+
+            <div class="field">
+
+                <label for="subject">
+                    Subject
+                </label>
+
+                <input
+                    type="text"
+                    id="subject"
+                    placeholder="Enter subject">
+
+            </div>
+
+
+            <div class="field">
+
+                <label for="message">
+                    Message
+                </label>
+
+                <textarea
+                    id="message"
+                    placeholder="Write your message"></textarea>
+
+            </div>
+
+
+            <button
+                class="send-button"
+                id="sendButton">
+                Send Message
+            </button>
+
+
+            <div
+                class="message"
+                id="formMessage">
+            </div>
+
+        </div>
+
+
+        <div class="support">
+
+            For help and account deletion requests,<br>
+
+            email
+            <a href="mailto:support@ethartoken.com">
+                support@ethartoken.com
+            </a>
+
+        </div>
+
+    </div>
+
+
+<script>
+
+const supabaseUrl =
+    "https://yrighidayswskssbgwcd.supabase.co";
+
+const supabaseKey =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyaWdoaWRheXN3c2tzc2Jnd2NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NDY3NDIsImV4cCI6MjEwNDAyMjc0Mn0.MEsBW0iw-uRcHyzFg4ZHU9JSbHkZH0AIMK-Di7iFGlQ";
+
+const client =
+    window.supabase.createClient(
+        supabaseUrl,
+        supabaseKey
+    );
+
+
+const subjectInput =
+    document.getElementById("subject");
+
+const messageInput =
+    document.getElementById("message");
+
+const sendButton =
+    document.getElementById("sendButton");
+
+const formMessage =
+    document.getElementById("formMessage");
+
+
+function showMessage(text, type) {
+
+    formMessage.textContent = text;
+
+    formMessage.className =
+        "message " + type;
+
+    formMessage.style.display =
+        "block";
+}
+
+
+// Check login
+
+async function checkUser() {
+
+    const {
+        data: { user },
+        error
+    } = await client.auth.getUser();
+
+
+    if (error || !user) {
+
+        window.location.href =
+            "../login/";
+
+    }
+
+}
+
+
+checkUser();
+
+
+// Send message
+
+sendButton.addEventListener(
+    "click",
+    async function () {
+
+        const subject =
+            subjectInput.value.trim();
+
+        const message =
+            messageInput.value.trim();
+
+
+        if (!subject || !message) {
+
+            showMessage(
+                "Subject and message are required.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        sendButton.textContent =
+            "Sending...";
+
+        sendButton.disabled =
+            true;
+
+
+        const {
+            data: { user },
+            error: userError
+        } = await client.auth.getUser();
+
+
+        if (userError || !user) {
+
+            window.location.href =
+                "../login/";
+
+            return;
+        }
+
+
+        const {
+            error
+        } = await client
+            .from("help_messages")
+            .insert({
+                user_id: user.id,
+                subject: subject,
+                message: message
+            });
+
+
+        if (error) {
+
+            console.error(error);
+
+            showMessage(
+                "Unable to send your message. Please try again.",
+                "error"
+            );
+
+        } else {
+
+            subjectInput.value = "";
+            messageInput.value = "";
+
+            showMessage(
+                "Your message has been sent successfully.",
+                "success"
+            );
+
+        }
+
+
+        sendButton.textContent =
+            "Send Message";
+
+        sendButton.disabled =
+            false;
+
+    }
+);
+
+
+// Back button
+
+document
+    .getElementById("backButton")
+    .addEventListener(
+        "click",
+        function () {
+
+            window.location.href =
+                "../dashboard/";
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
