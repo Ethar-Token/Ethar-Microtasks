@@ -426,7 +426,7 @@ async function loadAccount() {
     const { data: profile, error } =
         await client
             .from("profiles")
-            .select("names, email")
+            .select("name, email")
             .eq("id", user.id)
             .single();
 
@@ -446,7 +446,7 @@ async function loadAccount() {
 
 
     nameInput.value =
-        profile.names || "";
+        profile.name || "";
 
     emailInput.value =
         profile.email || user.email || "";
@@ -583,7 +583,7 @@ saveAccountButton.addEventListener(
             } = await client
                 .from("profiles")
                 .update({
-                    names: name,
+                    name: name,
                     email: email
                 })
                 .eq("id", user.id);
