@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Settings - MicroTasks</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #fff7fa;
+            color: #4a3038;
+        }
+
+        .header {
+            background: #ffd6e3;
+            padding: 18px 20px;
+            border-bottom: 1px solid #f3b8ca;
+        }
+
+        .header-inner {
+            max-width: 700px;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-button {
+            border: none;
+            background: none;
+            font-size: 28px;
+            color: #68414d;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 25px auto;
+            padding: 0 15px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #f1c8d4;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 18px;
+        }
+
+        .card h2 {
+            margin: 0 0 18px;
+            font-size: 18px;
+        }
+
+        .field {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 7px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dfc3cc;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #e99ab2;
+        }
+
+        button.primary {
+            width: 100%;
+            border: none;
+            background: #e99ab2;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button.primary:disabled {
+            background: #e6cbd3;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 12px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success {
+            color: #25834a;
+        }
+
+        .error {
+            color: #c0395a;
+        }
+
+        .payment-details {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .support {
+            text-align: center;
+            font-size: 14px;
+            color: #68414d;
+            margin: 25px 0 35px;
+            line-height: 1.6;
+        }
+
+        .support a {
+            color: #d86f91;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="header-inner">
+
+            <button
+                class="back-button"
+                id="backButton">
+                ←
+            </button>
+
+            <h1>Settings</h1>
+
+        </div>
+    </div>
+
+
+    <div class="container">
+
+        <!-- Account Details -->
+
+        <div class="card">
+
+            <h2>Account Details</h2>
+
+            <div class="field">
+                <label for="name">Name</label>
+
+                <input
+                    type="text"
+                    id="name"
+                    placeholder="Your name">
+            </div>
+
+
+            <div class="field">
+                <label for="email">Email</label>
+
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Your email">
+            </div>
+
+
+            <button
+                class="primary"
+                id="saveAccountButton">
+                Save Changes
+            </button>
+
+            <div
+                class="message"
+                id="accountMessage">
+            </div>
+
+        </div>
+
+
+        <!-- Change Password -->
+
+        <div class="card">
+
+            <h2>Change Password</h2>
+
+            <div class="field">
+
+                <label for="newPassword">
+                    New Password
+                </label>
+
+                <input
+                    type="password"
+                    id="newPassword"
+                    placeholder="At least 8 characters">
+
+            </div>
+
+
+            <div class="field">
+
+                <label for="confirmPassword">
+                    Confirm New Password
+                </label>
+
+                <input
+                    type="password"
+                    id="confirmPassword"
+                    placeholder="Confirm password">
+
+            </div>
+
+
+            <button
+                class="primary"
+                id="changePasswordButton">
+                Change Password
+            </button>
+
+
+            <div
+                class="message"
+                id="passwordMessage">
+            </div>
+
+        </div>
+
+
+        <!-- Payment Method -->
+
+        <div class="card">
+
+            <h2>Payment Method</h2>
+
+            <div class="field">
+
+                <label for="paymentMethod">
+                    Payment Method
+                </label>
+
+                <select id="paymentMethod">
+
+                    <option value="">
+                        Select payment method
+                    </option>
+
+                    <option value="paypal">
+                        PayPal
+                    </option>
+
+                    <option value="usdt">
+                        USDT (TRC-20)
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div
+                class="payment-details"
+                id="paymentDetails">
+
+                <div class="field">
+
+                    <label id="paymentLabel">
+                        Payment Details
+                    </label>
+
+                    <input
+                        type="text"
+                        id="paymentValue">
+
+                </div>
+
+            </div>
+
+
+            <button
+                class="primary"
+                id="savePaymentButton">
+                Save Payment Method
+            </button>
+
+
+            <div
+                class="message"
+                id="paymentMessage">
+            </div>
+
+        </div>
+
+
+        <div class="support">
+
+            For help and account deletion requests,<br>
+
+            email
+            <a href="mailto:support@ethartoken.com">
+                support@ethartoken.com
+            </a>
+
+        </div>
+
+    </div>
+
+
+<script>
+
+const supabaseUrl =
+    "https://yrighidayswskssbgwcd.supabase.co";
+
+const supabaseKey =
+    "YOUR_SUPABASE_ANON_KEY";
+
+const client =
+    window.supabase.createClient(
+        supabaseUrl,
+        supabaseKey
+    );
+
+
+// Elements
+
+const nameInput =
+    document.getElementById("name");
+
+const emailInput =
+    document.getElementById("email");
+
+const saveAccountButton =
+    document.getElementById("saveAccountButton");
+
+const accountMessage =
+    document.getElementById("accountMessage");
+
+const newPassword =
+    document.getElementById("newPassword");
+
+const confirmPassword =
+    document.getElementById("confirmPassword");
+
+const changePasswordButton =
+    document.getElementById("changePasswordButton");
+
+const passwordMessage =
+    document.getElementById("passwordMessage");
+
+const paymentMethod =
+    document.getElementById("paymentMethod");
+
+const paymentDetails =
+    document.getElementById("paymentDetails");
+
+const paymentLabel =
+    document.getElementById("paymentLabel");
+
+const paymentValue =
+    document.getElementById("paymentValue");
+
+const savePaymentButton =
+    document.getElementById("savePaymentButton");
+
+const paymentMessage =
+    document.getElementById("paymentMessage");
+
+
+// Show message
+
+function showMessage(element, text, type) {
+
+    element.textContent = text;
+
+    element.className =
+        "message " + type;
+
+    element.style.display = "block";
+}
+
+
+// Load account
+
+async function loadAccount() {
+
+    const {
+        data: { user },
+        error: authError
+    } = await client.auth.getUser();
+
+
+    if (authError || !user) {
+
+        window.location.href = "../login/";
+
+        return;
+    }
+
+
+    const { data: profile, error } =
+        await client
+            .from("profiles")
+            .select("names, email")
+            .eq("id", user.id)
+            .single();
+
+
+    if (error) {
+
+        console.error(error);
+
+        showMessage(
+            accountMessage,
+            "Unable to load account details.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    nameInput.value =
+        profile.names || "";
+
+    emailInput.value =
+        profile.email || user.email || "";
+
+}
+
+
+loadAccount();
+
+
+// Save account details
+
+saveAccountButton.addEventListener(
+    "click",
+    async function () {
+
+        const name =
+            nameInput.value.trim();
+
+        const email =
+            emailInput.value.trim();
+
+
+        if (!name || !email) {
+
+            showMessage(
+                accountMessage,
+                "Name and email are required.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        saveAccountButton.textContent =
+            "Saving...";
+
+        saveAccountButton.disabled =
+            true;
+
+
+        try {
+
+            const {
+                data: { user },
+                error: userError
+            } = await client.auth.getUser();
+
+
+            if (userError || !user) {
+
+                window.location.href =
+                    "../login/";
+
+                return;
+            }
+
+
+            // Check whether email changed
+
+            const oldEmail =
+                (user.email || "").toLowerCase();
+
+
+            const newEmail =
+                email.toLowerCase();
+
+
+            if (newEmail !== oldEmail) {
+
+                const {
+                    data: exists,
+                    error: existsError
+                } = await client.rpc(
+                    "email_exists",
+                    {
+                        check_email: email
+                    }
+                );
+
+
+                if (existsError) {
+
+                    console.error(existsError);
+
+                    showMessage(
+                        accountMessage,
+                        "Unable to check email.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                if (exists) {
+
+                    showMessage(
+                        accountMessage,
+                        "That email is already registered.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                const {
+                    error: emailError
+                } = await client.auth.updateUser({
+                    email: email
+                });
+
+
+                if (emailError) {
+
+                    console.error(emailError);
+
+                    showMessage(
+                        accountMessage,
+                        emailError.message,
+                        "error"
+                    );
+
+                    return;
+                }
+
+            }
+
+
+            const {
+                error: profileError
+            } = await client
+                .from("profiles")
+                .update({
+                    names: name,
+                    email: email
+                })
+                .eq("id", user.id);
+
+
+            if (profileError) {
+
+                console.error(profileError);
+
+                showMessage(
+                    accountMessage,
+                    "Unable to save account details.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            showMessage(
+                accountMessage,
+                "Account details saved successfully.",
+                "success"
+            );
+
+        } finally {
+
+            saveAccountButton.textContent =
+                "Save Changes";
+
+            saveAccountButton.disabled =
+                false;
+        }
+
+    }
+);
+
+
+// Change password
+
+changePasswordButton.addEventListener(
+    "click",
+    async function () {
+
+        const password =
+            newPassword.value;
+
+        const confirm =
+            confirmPassword.value;
+
+
+        if (!password || !confirm) {
+
+            showMessage(
+                passwordMessage,
+                "Both password fields are required.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (password.length < 8) {
+
+            showMessage(
+                passwordMessage,
+                "Password must be at least 8 characters.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (password !== confirm) {
+
+            showMessage(
+                passwordMessage,
+                "Passwords do not match.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        changePasswordButton.textContent =
+            "Changing...";
+
+        changePasswordButton.disabled =
+            true;
+
+
+        const { error } =
+            await client.auth.updateUser({
+                password: password
+            });
+
+
+        if (error) {
+
+            console.error(error);
+
+            showMessage(
+                passwordMessage,
+                error.message,
+                "error"
+            );
+
+        } else {
+
+            newPassword.value = "";
+            confirmPassword.value = "";
+
+            showMessage(
+                passwordMessage,
+                "Password changed successfully.",
+                "success"
+            );
+        }
+
+
+        changePasswordButton.textContent =
+            "Change Password";
+
+        changePasswordButton.disabled =
+            false;
+
+    }
+);
+
+
+// Payment method selection
+
+paymentMethod.addEventListener(
+    "change",
+    function () {
+
+        const method =
+            paymentMethod.value;
+
+
+        if (!method) {
+
+            paymentDetails.style.display =
+                "none";
+
+            return;
+        }
+
+
+        paymentDetails.style.display =
+            "block";
+
+
+        if (method === "paypal") {
+
+            paymentLabel.textContent =
+                "PayPal Email";
+
+            paymentValue.placeholder =
+                "Enter your PayPal email";
+
+            paymentValue.type =
+                "email";
+
+        }
+
+
+        if (method === "usdt") {
+
+            paymentLabel.textContent =
+                "USDT (TRC-20) Wallet Address";
+
+            paymentValue.placeholder =
+                "Enter your TRC-20 wallet address";
+
+            paymentValue.type =
+                "text";
+
+        }
+
+    }
+);
+
+
+// Save payment method
+
+savePaymentButton.addEventListener(
+    "click",
+    async function () {
+
+        const method =
+            paymentMethod.value;
+
+        const value =
+            paymentValue.value.trim();
+
+
+        if (!method || !value) {
+
+            showMessage(
+                paymentMessage,
+                "Payment method and payment details are required.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        savePaymentButton.textContent =
+            "Saving...";
+
+        savePaymentButton.disabled =
+            true;
+
+
+        // Payment columns need to exist
+        // in the profiles table.
+
+        const {
+            data: { user }
+        } = await client.auth.getUser();
+
+
+        const { error } =
+            await client
+                .from("profiles")
+                .update({
+                    payment_method: method,
+                    payment_details: value
+                })
+                .eq("id", user.id);
+
+
+        if (error) {
+
+            console.error(error);
+
+            showMessage(
+                paymentMessage,
+                "Unable to save payment method.",
+                "error"
+            );
+
+        } else {
+
+            showMessage(
+                paymentMessage,
+                "Payment method saved successfully.",
+                "success"
+            );
+        }
+
+
+        savePaymentButton.textContent =
+            "Save Payment Method";
+
+        savePaymentButton.disabled =
+            false;
+
+    }
+);
+
+
+// Back button
+
+document
+    .getElementById("backButton")
+    .addEventListener(
+        "click",
+        function () {
+
+            window.location.href =
+                "../";
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
