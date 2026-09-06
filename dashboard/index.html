@@ -663,10 +663,10 @@
                     📝
                 </div>
 
-                <h2>Review Apps</h2>
+                <h2>Rate Apps</h2>
 
                 <p>
-                    Give a 5-star rating to apps on Google Playstore.
+                    Download and install an app if you don't have it yet, then rate and write a review on Google Playstore.
                 </p>
 
                 <div class="task-bottom">
@@ -675,8 +675,8 @@
                         $0.05 - $0.50
                     </span>
 
-                    <button class="task-button">
-                        Coming Soon
+                    <button id="reviewAppsButton" class="task-button">
+                        View Tasks
                     </button>
 
                 </div>
@@ -961,6 +961,60 @@
             <button id="downloadAppsClose" class="download-apps-close">
                 Close
             </button>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     REVIEW APPS WINDOW
+========================= -->
+
+<div
+    id="reviewAppsWindow"
+    class="download-apps-window"
+>
+
+    <div class="download-apps-content">
+
+        <div class="download-apps-header">
+
+            <button
+                id="reviewAppsBack"
+                class="download-apps-back"
+            >
+                ←
+            </button>
+
+            <span class="download-apps-title">
+                Review Apps
+            </span>
+
+        </div>
+
+
+        <div
+            id="reviewAppsList"
+            class="download-apps-list"
+        >
+
+            <div class="download-apps-loading">
+                Loading available apps...
+            </div>
+
+        </div>
+
+
+        <div class="download-apps-footer">
+
+            <button
+                id="reviewAppsClose"
+                class="download-apps-close"
+            >
+                Close
+            </button>
+
         </div>
 
     </div>
@@ -1668,6 +1722,590 @@ taskBack.addEventListener("click", function () {
     doneButton.textContent = "Done";
 
 });
+
+/* =========================
+   REVIEW APPS TASK
+========================= */
+
+const reviewAppsWindow =
+    document.getElementById("reviewAppsWindow");
+
+const reviewAppsList =
+    document.getElementById("reviewAppsList");
+
+const reviewAppsButton =
+    document.getElementById("reviewAppsButton");
+
+const reviewAppsBack =
+    document.getElementById("reviewAppsBack");
+
+const reviewAppsClose =
+    document.getElementById("reviewAppsClose");
+
+
+/* =========================
+   OPEN REVIEW APPS
+========================= */
+
+if (reviewAppsButton) {
+
+    reviewAppsButton.addEventListener(
+        "click",
+        function () {
+
+            reviewAppsWindow.style.display = "flex";
+
+            loadReviewApps();
+
+        }
+    );
+
+}
+
+
+/* =========================
+   CLOSE REVIEW APPS
+========================= */
+
+function closeReviewAppsWindow() {
+
+    reviewAppsWindow.style.display = "none";
+
+}
+
+
+reviewAppsBack.addEventListener(
+    "click",
+    closeReviewAppsWindow
+);
+
+
+reviewAppsClose.addEventListener(
+    "click",
+    closeReviewAppsWindow
+);
+
+
+/* =========================
+   LOAD REVIEW APPS
+========================= */
+
+async function loadReviewApps() {
+
+    reviewAppsList.innerHTML = `
+
+        <div class="download-apps-loading">
+            Loading available apps...
+        </div>
+
+    `;
+
+
+    /* Get logged-in user */
+
+    const {
+        data: { user },
+        error: userError
+    } = await client.auth.getUser();
+
+
+    if (userError || !user) {
+
+        reviewAppsList.innerHTML = `
+
+            <div class="download-apps-empty">
+                Please log in again.
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    /* Get apps available for review */
+
+    const {
+        data: apps,
+        error: appsError
+    } = await client
+        .from("download_apps")
+        .select(
+            "id, app_name, description, google_play_link, reward"
+        )
+        .eq("active", true)
+        .eq("review", true);
+
+
+    if (appsError) {
+
+        console.error(
+            "Review apps error:",
+            appsError
+        );
+
+        reviewAppsList.innerHTML = `
+
+            <div class="download-apps-empty">
+                Unable to load review tasks right now.
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    /* Get user's previous reviews */
+
+    const {
+        data: previousReviews,
+        error: reviewsError
+    } = await client
+        .from("app_reviews")
+        .select("app_id")
+        .eq("user_id", user.id);
+
+
+    if (reviewsError) {
+
+        console.error(
+            "Previous reviews error:",
+            reviewsError
+        );
+
+        reviewAppsList.innerHTML = `
+
+            <div class="download-apps-empty">
+                Unable to load your review tasks.
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    /* Get apps the user has already downloaded */
+
+    const {
+        data: userDownloads,
+        error: downloadsError
+    } = await client
+        .from("app_downloads")
+        .select("app_id")
+        .eq("user_id", user.id);
+
+
+    if (downloadsError) {
+
+        console.error(
+            "User downloads error:",
+            downloadsError
+        );
+
+        reviewAppsList.innerHTML = `
+
+            <div class="download-apps-empty">
+                Unable to check your app downloads.
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    const reviewedAppIds =
+        new Set(
+            (previousReviews || []).map(
+                item => item.app_id
+            )
+        );
+
+
+    const downloadedAppIds =
+        new Set(
+            (userDownloads || []).map(
+                item => item.app_id
+            )
+        );
+
+
+    /*
+       Only show apps that:
+
+       1. Are active
+       2. Have review = true
+       3. User has downloaded/installed
+       4. User has not reviewed before
+    */
+
+    const availableApps =
+        (apps || []).filter(
+            app =>
+                downloadedAppIds.has(app.id) &&
+                !reviewedAppIds.has(app.id)
+        );
+
+
+    if (availableApps.length === 0) {
+
+        reviewAppsList.innerHTML = `
+
+            <div class="download-apps-empty">
+
+                You have no available app reviews
+                at the moment.
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    /* Display apps */
+
+    reviewAppsList.innerHTML = `
+
+        <div
+            style="
+                background:#fff0f5;
+                border:1px solid #f1c8d4;
+                border-radius:10px;
+                padding:14px;
+                margin-bottom:18px;
+                color:#68414d;
+                font-size:14px;
+                line-height:1.5;
+            "
+        >
+            You have to download and install an app
+            before you can leave a review.
+        </div>
+
+        ${availableApps.map(app => `
+
+            <div class="download-app-card">
+
+                <div class="download-app-card-header">
+
+                    <div class="download-app-name">
+                        ${escapeHtml(app.app_name)}
+                    </div>
+
+                    <div class="download-app-reward">
+                        $${Number(app.reward).toFixed(2)}
+                    </div>
+
+                </div>
+
+
+                <div class="download-app-description">
+
+                    ${escapeHtml(app.description)}
+
+                </div>
+
+
+                <a
+                    href="${escapeAttribute(app.google_play_link)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="download-app-play"
+                >
+                    Open Google Play
+                </a>
+
+
+                <label
+                    class="download-app-label"
+                >
+                    Rating
+                </label>
+
+
+                <select
+                    class="download-app-email"
+                    id="reviewRating-${app.id}"
+                >
+
+                    <option value="">
+                        Select rating
+                    </option>
+
+                    <option value="1">
+                        ⭐ 1 Star
+                    </option>
+
+                    <option value="2">
+                        ⭐⭐ 2 Stars
+                    </option>
+
+                    <option value="3">
+                        ⭐⭐⭐ 3 Stars
+                    </option>
+
+                    <option value="4">
+                        ⭐⭐⭐⭐ 4 Stars
+                    </option>
+
+                    <option value="5">
+                        ⭐⭐⭐⭐⭐ 5 Stars
+                    </option>
+
+                </select>
+
+
+                <label
+                    class="download-app-label"
+                >
+                    Your Google Play review
+                </label>
+
+
+                <textarea
+                    id="reviewText-${app.id}"
+                    class="download-app-email"
+                    placeholder="Write your review here..."
+                    rows="5"
+                    style="resize:vertical;"
+                ></textarea>
+
+
+                <button
+                    class="download-app-submit"
+                    data-review-app-id="${app.id}"
+                >
+                    Submit Review
+                </button>
+
+
+                <div
+                    class="download-app-message"
+                    id="reviewMessage-${app.id}"
+                ></div>
+
+            </div>
+
+        `).join("")}
+    `;
+
+
+    /* Add submit events */
+
+    document
+        .querySelectorAll(
+            ".download-app-submit[data-review-app-id]"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                submitAppReview
+            );
+
+        });
+
+}
+
+
+/* =========================
+   SUBMIT APP REVIEW
+========================= */
+
+async function submitAppReview(event) {
+
+    const button =
+        event.currentTarget;
+
+
+    const appId =
+        Number(
+            button.dataset.reviewAppId
+        );
+
+
+    const ratingInput =
+        document.getElementById(
+            `reviewRating-${appId}`
+        );
+
+
+    const reviewInput =
+        document.getElementById(
+            `reviewText-${appId}`
+        );
+
+
+    const message =
+        document.getElementById(
+            `reviewMessage-${appId}`
+        );
+
+
+    const rating =
+        Number(
+            ratingInput.value
+        );
+
+
+    const reviewText =
+        reviewInput.value.trim();
+
+
+    if (!rating) {
+
+        message.textContent =
+            "Please select a rating.";
+
+        return;
+    }
+
+
+    if (!reviewText) {
+
+        message.textContent =
+            "Please write a review.";
+
+        return;
+    }
+
+
+    if (reviewText.length < 10) {
+
+        message.textContent =
+            "Your review must be at least 10 characters.";
+
+        return;
+    }
+
+
+    button.disabled = true;
+
+    button.textContent =
+        "Submitting...";
+
+
+    /* Get user */
+
+    const {
+        data: { user },
+        error: userError
+    } = await client.auth.getUser();
+
+
+    if (userError || !user) {
+
+        message.textContent =
+            "Your session has expired. Please log in again.";
+
+        button.disabled = false;
+
+        button.textContent =
+            "Submit Review";
+
+        return;
+    }
+
+
+    /* Make sure user actually downloaded app */
+
+    const {
+        data: download,
+        error: downloadError
+    } = await client
+        .from("app_downloads")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("app_id", appId)
+        .maybeSingle();
+
+
+    if (downloadError || !download) {
+
+        message.textContent =
+            "You must download and install this app before reviewing it.";
+
+        button.disabled = false;
+
+        button.textContent =
+            "Submit Review";
+
+        return;
+    }
+
+
+    /* Submit review */
+
+    const {
+        error
+    } = await client
+        .from("app_reviews")
+        .insert({
+
+            user_id: user.id,
+
+            app_id: appId,
+
+            rating: rating,
+
+            review_text: reviewText,
+
+            status: "Pending",
+
+            paid: false
+
+        });
+
+
+    if (error) {
+
+        console.error(
+            "App review submission error:",
+            error
+        );
+
+
+        if (error.code === "23505") {
+
+            message.textContent =
+                "You have already submitted a review for this app.";
+
+        } else {
+
+            message.textContent =
+                "Unable to submit your review. Please try again.";
+
+        }
+
+
+        button.disabled = false;
+
+        button.textContent =
+            "Submit Review";
+
+        return;
+    }
+
+
+    /* Success */
+
+    message.textContent =
+        "Review submitted successfully. It is pending approval.";
+
+
+    button.textContent =
+        "Submitted";
+
+
+    reviewInput.disabled = true;
+
+    ratingInput.disabled = true;
+
+}
 
 </script>
 
