@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin - ETHAR</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #fff7fa;
+            color: #4a3038;
+        }
+
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .admin-header {
+            height: 65px;
+            background: #ffd6e3;
+            border-bottom: 1px solid #f3b8ca;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 25px;
+        }
+
+        .admin-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .logout-button {
+            background: #e99ab2;
+            color: white;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+
+        /* =========================
+           NAVIGATION
+        ========================= */
+
+        .admin-nav {
+            background: white;
+            border-bottom: 1px solid #f1c8d4;
+
+            display: flex;
+            gap: 5px;
+
+            padding: 10px 25px;
+        }
+
+        .admin-nav-button {
+            border: none;
+            background: transparent;
+
+            padding: 10px 16px;
+
+            border-radius: 8px;
+
+            color: #68414d;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            cursor: pointer;
+        }
+
+        .admin-nav-button.active {
+            background: #ffd6e3;
+            color: #4a3038;
+        }
+
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        .admin-main {
+            padding: 25px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 21px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+
+        /* =========================
+           TABLE
+        ========================= */
+
+        .table-container {
+            width: 100%;
+            background: white;
+
+            border: 1px solid #f1c8d4;
+            border-radius: 12px;
+
+            overflow-x: auto;
+        }
+
+        .withdrawal-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 950px;
+        }
+
+        .withdrawal-table th {
+            background: #ffd6e3;
+
+            color: #4a3038;
+
+            text-align: left;
+
+            padding: 14px 12px;
+
+            font-size: 13px;
+            font-weight: 700;
+
+            white-space: nowrap;
+        }
+
+        .withdrawal-table td {
+            padding: 14px 12px;
+
+            border-top: 1px solid #f5dce4;
+
+            font-size: 13px;
+
+            vertical-align: middle;
+        }
+
+        .withdrawal-table tbody tr:hover {
+            background: #fffafd;
+        }
+
+
+        /* =========================
+           STATUS
+        ========================= */
+
+        .status {
+            display: inline-block;
+
+            padding: 5px 9px;
+
+            border-radius: 20px;
+
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-processing {
+            background: #fff1c7;
+            color: #876b00;
+        }
+
+        .status-paid {
+            background: #dff5e7;
+            color: #277545;
+        }
+
+        .status-rejected {
+            background: #f8dce3;
+            color: #a13f5c;
+        }
+
+
+        /* =========================
+           ACTION BUTTONS
+        ========================= */
+
+        .action-buttons {
+            display: flex;
+            gap: 7px;
+        }
+
+        .paid-button,
+        .reject-button {
+            border: none;
+
+            padding: 7px 12px;
+
+            border-radius: 7px;
+
+            font-size: 12px;
+            font-weight: 600;
+
+            cursor: pointer;
+        }
+
+        .paid-button {
+            background: #8fd3a8;
+            color: white;
+        }
+
+        .reject-button {
+            background: #e99ab2;
+            color: white;
+        }
+
+        .paid-button:disabled,
+        .reject-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+
+        /* =========================
+           LOADING / EMPTY
+        ========================= */
+
+        .loading-message,
+        .empty-message {
+            text-align: center;
+
+            padding: 50px 20px;
+
+            color: #68414d;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 700px) {
+
+            .admin-header {
+                padding: 0 15px;
+            }
+
+            .admin-title {
+                font-size: 17px;
+            }
+
+            .admin-main {
+                padding: 15px;
+            }
+
+            .admin-nav {
+                padding: 8px 10px;
+
+                overflow-x: auto;
+            }
+
+            .admin-nav-button {
+                white-space: nowrap;
+            }
+
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+
+    <!-- =========================
+         HEADER
+    ========================= -->
+
+    <header class="admin-header">
+
+        <div class="admin-title">
+            ETHAR Admin
+        </div>
+
+        <button
+            id="logoutButton"
+            class="logout-button"
+        >
+            Logout
+        </button>
+
+    </header>
+
+
+    <!-- =========================
+         ADMIN NAVIGATION
+    ========================= -->
+
+    <nav class="admin-nav">
+
+        <button
+            id="withdrawalsTab"
+            class="admin-nav-button active"
+        >
+            Withdrawals
+        </button>
+
+        <button
+            id="appDownloadsTab"
+            class="admin-nav-button"
+        >
+            App Downloads
+        </button>
+
+        <button
+            id="helpTab"
+            class="admin-nav-button"
+        >
+            Help
+        </button>
+
+    </nav>
+
+
+    <!-- =========================
+         MAIN
+    ========================= -->
+
+    <main class="admin-main">
+
+        <section id="withdrawalsSection">
+
+            <div class="section-title">
+                Withdrawals
+            </div>
+
+
+            <div class="table-container">
+
+                <table class="withdrawal-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Email</th>
+
+                            <th>Payment Method</th>
+
+                            <th>Payment Details</th>
+
+                            <th>Amount</th>
+
+                            <th>Date</th>
+
+                            <th>Status</th>
+
+                            <th>Action</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="withdrawalsTableBody">
+
+                        <tr>
+
+                            <td colspan="7">
+
+                                <div class="loading-message">
+                                    Loading withdrawals...
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+    <script>
+
+        /* =========================
+           SUPABASE
+        ========================= */
+
+        const supabaseUrl =
+            "https://yrighidayswskssbgwcd.supabase.co";
+
+        const supabaseKey =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyaWdoaWRheXN3c2tzc2Jnd2NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NDY3NDIsImV4cCI6MjEwNDAyMjc0Mn0.MEsBW0iw-uRcHyzFg4ZHU9JSbHkZH0AIMK-Di7iFGlQ";
+
+        const client =
+            window.supabase.createClient(
+                supabaseUrl,
+                supabaseKey
+            );
+
+
+        /* =========================
+           ADMIN ID
+        ========================= */
+
+        const ADMIN_ID =
+            "7d4fd419-a623-4c4b-a936-6b5f4d344529";
+
+
+        /* =========================
+           ELEMENTS
+        ========================= */
+
+        const withdrawalsTableBody =
+            document.getElementById(
+                "withdrawalsTableBody"
+            );
+
+        const logoutButton =
+            document.getElementById(
+                "logoutButton"
+            );
+
+
+        /* =========================
+           CHECK ADMIN
+        ========================= */
+
+        async function checkAdmin() {
+
+            const {
+                data: {
+                    user
+                },
+                error
+            } = await client.auth.getUser();
+
+
+            if (error || !user) {
+
+                window.location.href =
+                    "../login/";
+
+                return false;
+            }
+
+
+            if (user.id !== ADMIN_ID) {
+
+                alert(
+                    "You are not authorized to access the admin page."
+                );
+
+                window.location.href =
+                    "../dashboard/";
+
+                return false;
+            }
+
+
+            return true;
+        }
+
+
+        /* =========================
+           LOAD WITHDRAWALS
+        ========================= */
+
+        async function loadWithdrawals() {
+
+            withdrawalsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="7">
+                        <div class="loading-message">
+                            Loading withdrawals...
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+
+            /*
+               Get withdrawals first.
+            */
+
+            const {
+                data: withdrawals,
+                error: withdrawalsError
+            } = await client
+                .from("withdrawals")
+                .select(
+                    "id, user_id, amount, created_at, status"
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+
+            if (withdrawalsError) {
+
+                console.error(
+                    "Withdrawals error:",
+                    withdrawalsError
+                );
+
+                withdrawalsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-message">
+                                Unable to load withdrawals.
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
+                return;
+            }
+
+
+            if (
+                !withdrawals ||
+                withdrawals.length === 0
+            ) {
+
+                withdrawalsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-message">
+                                No withdrawals found.
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
+                return;
+            }
+
+
+            /*
+               Get the profiles belonging to
+               these withdrawal users.
+            */
+
+            const userIds =
+                [
+                    ...new Set(
+                        withdrawals.map(
+                            withdrawal =>
+                                withdrawal.user_id
+                        )
+                    )
+                ];
+
+
+            const {
+                data: profiles,
+                error: profilesError
+            } = await client
+                .from("profiles")
+                .select(
+                    "id, email, payment_method, payment_details"
+                )
+                .in(
+                    "id",
+                    userIds
+                );
+
+
+            if (profilesError) {
+
+                console.error(
+                    "Profiles error:",
+                    profilesError
+                );
+
+                withdrawalsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-message">
+                                Unable to load user payment information.
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
+                return;
+            }
+
+
+            /*
+               Make profiles easy to find by user ID.
+            */
+
+            const profileMap =
+                new Map(
+                    (profiles || []).map(
+                        profile => [
+                            profile.id,
+                            profile
+                        ]
+                    )
+                );
+
+
+            /*
+               Build table.
+            */
+
+            withdrawalsTableBody.innerHTML =
+                withdrawals.map(
+                    withdrawal => {
+
+                        const profile =
+                            profileMap.get(
+                                withdrawal.user_id
+                            ) || {};
+
+
+                        const status =
+                            withdrawal.status ||
+                            "Processing";
+
+
+                        let statusClass =
+                            "status-processing";
+
+
+                        if (
+                            status === "Paid"
+                        ) {
+
+                            statusClass =
+                                "status-paid";
+
+                        } else if (
+                            status === "Rejected"
+                        ) {
+
+                            statusClass =
+                                "status-rejected";
+
+                        }
+
+
+                        const paymentMethod =
+                            profile.payment_method
+                                ? formatPaymentMethod(
+                                    profile.payment_method
+                                )
+                                : "Not set";
+
+
+                        const paymentDetails =
+                            profile.payment_details ||
+                            "Not set";
+
+
+                        const createdDate =
+                            new Date(
+                                withdrawal.created_at
+                            ).toLocaleString();
+
+
+                        const actionButtons =
+                            status === "Processing"
+
+                                ? `
+                                    <div class="action-buttons">
+
+                                        <button
+                                            class="paid-button"
+                                            onclick="approveWithdrawal(${withdrawal.id})"
+                                        >
+                                            Paid
+                                        </button>
+
+                                        <button
+                                            class="reject-button"
+                                            onclick="rejectWithdrawal(${withdrawal.id})"
+                                        >
+                                            Reject
+                                        </button>
+
+                                    </div>
+                                  `
+
+                                : "—";
+
+
+                        return `
+
+                            <tr>
+
+                                <td>
+                                    ${escapeHtml(
+                                        profile.email ||
+                                        "Unknown"
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(
+                                        paymentMethod
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(
+                                        paymentDetails
+                                    )}
+                                </td>
+
+                                <td>
+                                    $${Number(
+                                        withdrawal.amount
+                                    ).toFixed(2)}
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(
+                                        createdDate
+                                    )}
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="status ${statusClass}"
+                                    >
+                                        ${escapeHtml(status)}
+                                    </span>
+
+                                </td>
+
+                                <td>
+                                    ${actionButtons}
+                                </td>
+
+                            </tr>
+
+                        `;
+
+                    }
+                ).join("");
+
+        }
+
+
+        /* =========================
+           APPROVE WITHDRAWAL
+        ========================= */
+
+        async function approveWithdrawal(
+            withdrawalId
+        ) {
+
+            const confirmed =
+                confirm(
+                    "Mark this withdrawal as Paid?"
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            const {
+                error
+            } = await client.rpc(
+                "approve_withdrawal",
+                {
+                    p_withdrawal_id:
+                        withdrawalId
+                }
+            );
+
+
+            if (error) {
+
+                console.error(
+                    "Approve withdrawal error:",
+                    error
+                );
+
+                alert(
+                    error.message ||
+                    "Unable to approve withdrawal."
+                );
+
+                return;
+            }
+
+
+            alert(
+                "Withdrawal marked as Paid."
+            );
+
+
+            await loadWithdrawals();
+
+        }
+
+
+        /* =========================
+           REJECT WITHDRAWAL
+        ========================= */
+
+        async function rejectWithdrawal(
+            withdrawalId
+        ) {
+
+            const confirmed =
+                confirm(
+                    "Reject this withdrawal? The amount will be returned to the user's wallet."
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            const {
+                error
+            } = await client.rpc(
+                "reject_withdrawal",
+                {
+                    p_withdrawal_id:
+                        withdrawalId
+                }
+            );
+
+
+            if (error) {
+
+                console.error(
+                    "Reject withdrawal error:",
+                    error
+                );
+
+                alert(
+                    error.message ||
+                    "Unable to reject withdrawal."
+                );
+
+                return;
+            }
+
+
+            alert(
+                "Withdrawal rejected and the money was returned to the user's wallet."
+            );
+
+
+            await loadWithdrawals();
+
+        }
+
+
+        /* =========================
+           PAYMENT METHOD
+        ========================= */
+
+        function formatPaymentMethod(
+            method
+        ) {
+
+            if (
+                method === "paypal"
+            ) {
+
+                return "PayPal";
+
+            }
+
+
+            if (
+                method === "usdt"
+            ) {
+
+                return "USDT (TRC-20)";
+
+            }
+
+
+            return method;
+
+        }
+
+
+        /* =========================
+           ESCAPE HTML
+        ========================= */
+
+        function escapeHtml(
+            value
+        ) {
+
+            return String(value)
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
+
+
+        /* =========================
+           LOGOUT
+        ========================= */
+
+        logoutButton.addEventListener(
+            "click",
+            async function () {
+
+                logoutButton.textContent =
+                    "Logging out...";
+
+                logoutButton.disabled =
+                    true;
+
+
+                const {
+                    error
+                } = await client.auth.signOut();
+
+
+                if (error) {
+
+                    console.error(
+                        "Logout error:",
+                        error
+                    );
+
+                    logoutButton.textContent =
+                        "Logout";
+
+                    logoutButton.disabled =
+                        false;
+
+                    alert(
+                        "Unable to log out. Please try again."
+                    );
+
+                    return;
+                }
+
+
+                window.location.href =
+                    "../login/";
+
+            }
+        );
+
+
+        /* =========================
+           FUTURE TABS
+        ========================= */
+
+        document
+            .getElementById(
+                "appDownloadsTab"
+            )
+            .addEventListener(
+                "click",
+                function () {
+
+                    alert(
+                        "App Downloads admin section coming soon."
+                    );
+
+                }
+            );
+
+
+        document
+            .getElementById(
+                "helpTab"
+            )
+            .addEventListener(
+                "click",
+                function () {
+
+                    alert(
+                        "Help admin section coming later."
+                    );
+
+                }
+            );
+
+
+        /* =========================
+           START
+        ========================= */
+
+        async function startAdmin() {
+
+            const authorized =
+                await checkAdmin();
+
+
+            if (!authorized) {
+                return;
+            }
+
+
+            await loadWithdrawals();
+
+        }
+
+
+        startAdmin();
+
+    </script>
+
+</body>
+</html>
