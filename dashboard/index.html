@@ -175,6 +175,231 @@
             background: #df88a4;
         }
 
+        
+/* =========================
+   DOWNLOAD APPS WINDOW
+========================= */
+
+.download-apps-window {
+    position: fixed;
+    inset: 0;
+    background: rgba(40, 25, 30, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.download-apps-content {
+    width: 92vw;
+    max-width: 1100px;
+    height: 92vh;
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.download-apps-header {
+    height: 55px;
+    flex-shrink: 0;
+    background: #ffd6e3;
+    border-bottom: 1px solid #f3b8ca;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+}
+
+.download-apps-back {
+    background: none;
+    border: none;
+    color: #68414d;
+    font-size: 25px;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.download-apps-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #4a3038;
+    margin-left: 5px;
+}
+
+.download-apps-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.download-app-card {
+    background: #fff7fa;
+    border: 1px solid #f1c8d4;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.download-app-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.download-app-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #4a3038;
+}
+
+.download-app-reward {
+    font-size: 15px;
+    font-weight: 700;
+    color: #d97896;
+    white-space: nowrap;
+}
+
+.download-app-description {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #68414d;
+    margin-bottom: 18px;
+}
+
+.download-app-play {
+    display: inline-block;
+    background: #e99ab2;
+    color: white;
+    text-decoration: none;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 18px;
+}
+
+.download-app-play:hover {
+    opacity: 0.9;
+}
+
+.download-app-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a3038;
+    margin-bottom: 6px;
+}
+
+.download-app-email {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 12px;
+    border: 1px solid #e8b8c7;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    margin-bottom: 10px;
+}
+
+.download-app-email:focus {
+    border-color: #e99ab2;
+}
+
+.download-app-submit {
+    width: 100%;
+    background: #e99ab2;
+    color: white;
+    border: none;
+    padding: 11px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.download-app-submit:disabled {
+    background: #e6cbd3;
+    cursor: not-allowed;
+}
+
+.download-app-message {
+    font-size: 13px;
+    margin-top: 8px;
+    color: #68414d;
+}
+
+.download-apps-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #68414d;
+    font-size: 15px;
+}
+
+.download-apps-loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #68414d;
+}
+
+.download-apps-footer {
+    height: 65px;
+    flex-shrink: 0;
+    background: white;
+    border-top: 1px solid #f1c8d4;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 10px 15px;
+}
+
+.download-apps-close {
+    background: #e99ab2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 700px) {
+
+    .download-apps-window {
+        padding: 0;
+    }
+
+    .download-apps-content {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    .download-apps-list {
+        padding: 15px;
+    }
+
+    .download-app-card {
+        padding: 16px;
+    }
+
+    .download-app-card-header {
+        align-items: flex-start;
+    }
+}
+
 
         /* =========================
            WEBSITE TASK WINDOW
@@ -392,8 +617,8 @@
                         $0.10
                     </span>
 
-                    <button class="task-button">
-                        Coming Soon
+                    <button id="downloadAppsButton" class="task-button">
+                        View Tasks
                     </button>
 
                 </div>
@@ -703,7 +928,44 @@
 
     </div>
 
-</div>    
+</div>
+
+
+<!-- =========================
+     DOWNLOAD APPS WINDOW
+========================= -->
+
+<div id="downloadAppsWindow" class="download-apps-window">
+
+    <div class="download-apps-content">
+
+        <div class="download-apps-header">
+            <button id="downloadAppsBack" class="download-apps-back">
+                ←
+            </button>
+
+            <span class="download-apps-title">
+                Download & Install Apps
+            </span>
+        </div>
+
+        <div id="downloadAppsList" class="download-apps-list">
+
+            <div class="download-apps-loading">
+                Loading available apps...
+            </div>
+
+        </div>
+
+        <div class="download-apps-footer">
+            <button id="downloadAppsClose" class="download-apps-close">
+                Close
+            </button>
+        </div>
+
+    </div>
+
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -793,6 +1055,427 @@
 
 
     loadDashboard();
+
+
+/* =========================
+   DOWNLOAD APPS TASK
+========================= */
+
+const downloadAppsWindow =
+    document.getElementById("downloadAppsWindow");
+
+const downloadAppsList =
+    document.getElementById("downloadAppsList");
+
+const downloadAppsBack =
+    document.getElementById("downloadAppsBack");
+
+const downloadAppsClose =
+    document.getElementById("downloadAppsClose");
+
+
+/* =========================
+   FIND DOWNLOAD APPS BUTTON
+========================= */
+
+
+const downloadAppsButton =
+    document.getElementById("downloadAppsButton");
+
+
+if (downloadAppsButton) {
+
+    downloadAppsButton.addEventListener("click", function () {
+
+        downloadAppsWindow.style.display = "flex";
+
+        loadDownloadApps();
+
+    });
+
+}
+
+
+/* =========================
+   CLOSE WINDOW
+========================= */
+
+function closeDownloadAppsWindow() {
+
+    downloadAppsWindow.style.display = "none";
+
+}
+
+
+downloadAppsBack.addEventListener(
+    "click",
+    closeDownloadAppsWindow
+);
+
+
+downloadAppsClose.addEventListener(
+    "click",
+    closeDownloadAppsWindow
+);
+
+
+/* =========================
+   LOAD AVAILABLE APPS
+========================= */
+
+async function loadDownloadApps() {
+
+    downloadAppsList.innerHTML = `
+        <div class="download-apps-loading">
+            Loading available apps...
+        </div>
+    `;
+
+
+    /* Get logged-in user */
+
+    const {
+        data: { user },
+        error: userError
+    } = await client.auth.getUser();
+
+
+    if (userError || !user) {
+
+        downloadAppsList.innerHTML = `
+            <div class="download-apps-empty">
+                Please log in again.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* Get all active apps */
+
+    const {
+        data: apps,
+        error: appsError
+    } = await client
+        .from("download_apps")
+        .select("id, app_name, description, google_play_link, reward")
+        .eq("active", true);
+
+
+    if (appsError) {
+
+        console.error(
+            "Error loading apps:",
+            appsError
+        );
+
+        downloadAppsList.innerHTML = `
+            <div class="download-apps-empty">
+                Unable to load apps right now.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* Get apps this user has already submitted/been paid for */
+
+    const {
+        data: userDownloads,
+        error: downloadsError
+    } = await client
+        .from("app_downloads")
+        .select("app_id")
+        .eq("user_id", user.id);
+
+
+    if (downloadsError) {
+
+        console.error(
+            "Error loading previous downloads:",
+            downloadsError
+        );
+
+        downloadAppsList.innerHTML = `
+            <div class="download-apps-empty">
+                Unable to load your available apps.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* Create list of app IDs already used */
+
+    const completedAppIds =
+        new Set(
+            (userDownloads || []).map(
+                item => item.app_id
+            )
+        );
+
+
+    /* Only show apps the user hasn't submitted before */
+
+    const availableApps =
+        (apps || []).filter(
+            app => !completedAppIds.has(app.id)
+        );
+
+
+    /* No apps available */
+
+    if (availableApps.length === 0) {
+
+        downloadAppsList.innerHTML = `
+            <div class="download-apps-empty">
+                No available apps for download at the moment.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* Display available apps */
+
+    downloadAppsList.innerHTML =
+        availableApps.map(app => `
+
+            <div class="download-app-card">
+
+                <div class="download-app-card-header">
+
+                    <div class="download-app-name">
+                        ${escapeHtml(app.app_name)}
+                    </div>
+
+                    <div class="download-app-reward">
+                        $${Number(app.reward).toFixed(2)}
+                    </div>
+
+                </div>
+
+
+                <div class="download-app-description">
+                    ${escapeHtml(app.description)}
+                </div>
+
+
+                <a
+                    href="${escapeAttribute(app.google_play_link)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="download-app-play"
+                >
+                    Google Play
+                </a>
+
+
+                <label class="download-app-label">
+                    Email used when signing up in the app
+                </label>
+
+
+                <input
+                    type="email"
+                    class="download-app-email"
+                    id="appEmail-${app.id}"
+                    placeholder="Enter the email you used"
+                    autocomplete="email"
+                >
+
+
+                <button
+                    class="download-app-submit"
+                    data-app-id="${app.id}"
+                >
+                    Submit
+                </button>
+
+
+                <div
+                    class="download-app-message"
+                    id="appMessage-${app.id}"
+                ></div>
+
+            </div>
+
+        `).join("");
+
+
+    /* Add submit events */
+
+    document
+        .querySelectorAll(".download-app-submit")
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                submitDownloadApp
+            );
+
+        });
+
+}
+
+
+/* =========================
+   SUBMIT APP DOWNLOAD
+========================= */
+
+async function submitDownloadApp(event) {
+
+    const button = event.currentTarget;
+
+    const appId =
+        Number(button.dataset.appId);
+
+    const emailInput =
+        document.getElementById(
+            `appEmail-${appId}`
+        );
+
+    const message =
+        document.getElementById(
+            `appMessage-${appId}`
+        );
+
+
+    const email =
+        emailInput.value.trim();
+
+
+    if (!email) {
+
+        message.textContent =
+            "Please enter the email you used in the app.";
+
+        return;
+    }
+
+
+    if (!emailInput.checkValidity()) {
+
+        message.textContent =
+            "Please enter a valid email address.";
+
+        return;
+    }
+
+
+    button.disabled = true;
+    button.textContent = "Submitting...";
+
+
+    /* Get logged-in user */
+
+    const {
+        data: { user },
+        error: userError
+    } = await client.auth.getUser();
+
+
+    if (userError || !user) {
+
+        message.textContent =
+            "Your session has expired. Please log in again.";
+
+        button.disabled = false;
+        button.textContent = "Submit";
+
+        return;
+    }
+
+
+    /* Submit the task */
+
+    const {
+        error
+    } = await client
+        .from("app_downloads")
+        .insert({
+            user_id: user.id,
+            app_id: appId,
+            app_email: email,
+            status: "Pending",
+            paid: false
+        });
+
+
+    if (error) {
+
+        console.error(
+            "App download submission error:",
+            error
+        );
+
+
+
+        if (
+            error.code === "23505"
+        ) {
+
+            message.textContent =
+                "You have already submitted this app.";
+
+        } else {
+
+            message.textContent =
+                "Unable to submit this task. Please try again.";
+
+        }
+
+
+        button.disabled = false;
+        button.textContent = "Submit";
+
+        return;
+    }
+
+
+    /* Successful submission */
+
+    message.textContent =
+        "Submitted successfully. Your task is pending approval.";
+
+
+    button.textContent =
+        "Submitted";
+
+    button.disabled = true;
+
+    emailInput.disabled = true;
+
+}
+
+
+/* =========================
+   HTML ESCAPING
+========================= */
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+function escapeAttribute(value) {
+
+    return String(value)
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
 
 
 /* =========================
