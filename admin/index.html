@@ -394,34 +394,58 @@
 
         </section>
 
-<div id="appDownloadsSection" class="admin-section">
-    <div class="section-header">
-        <h2>App Downloads</h2>
+
+<section id="appDownloadsSection" style="display: none;">
+
+    <div class="section-title">
+        App Downloads
     </div>
 
     <div class="table-container">
-        <table class="admin-table">
+
+        <table class="withdrawal-table">
+
             <thead>
+
                 <tr>
+
                     <th>Email</th>
+
                     <th>App Name</th>
+
                     <th>Date</th>
+
                     <th>App Email</th>
+
                     <th>Status</th>
+
                     <th>Action</th>
+
                 </tr>
+
             </thead>
 
             <tbody id="appDownloadsTableBody">
+
                 <tr>
-                    <td colspan="6" class="loading-cell">
-                        Loading app downloads...
+
+                    <td colspan="6">
+
+                        <div class="loading-message">
+                            Loading app downloads...
+                        </div>
+
                     </td>
+
                 </tr>
+
             </tbody>
+
         </table>
+
     </div>
-</div>
+
+</section>
 
     </main>
 
@@ -467,6 +491,27 @@
                 "logoutButton"
             );
 
+        const withdrawalsSection =
+            document.getElementById(
+                "withdrawalsSection"
+            );
+
+        const appDownloadsSection =
+            document.getElementById(
+                "appDownloadsSection"
+            );
+
+        const withdrawalsTab =
+            document.getElementById(
+                "withdrawalsTab"
+            );
+
+        const appDownloadsTab =
+            document.getElementById(
+                "appDownloadsTab"
+            );
+
+        
 
         /* =========================
            CHECK ADMIN
@@ -506,6 +551,51 @@
 
             return true;
         }
+
+appDownloadsTab.addEventListener(
+    "click",
+    async function () {
+
+        withdrawalsSection.style.display =
+            "none";
+
+        appDownloadsSection.style.display =
+            "block";
+
+        withdrawalsTab.classList.remove(
+            "active"
+        );
+
+        appDownloadsTab.classList.add(
+            "active"
+        );
+
+        await loadAppDownloads();
+    }
+);
+
+
+withdrawalsTab.addEventListener(
+    "click",
+    async function () {
+
+        appDownloadsSection.style.display =
+            "none";
+
+        withdrawalsSection.style.display =
+            "block";
+
+        appDownloadsTab.classList.remove(
+            "active"
+        );
+
+        withdrawalsTab.classList.add(
+            "active"
+        );
+
+        await loadWithdrawals();
+    }
+);
 
 
         /* =========================
@@ -1018,30 +1108,59 @@
             }
         );
 
+
 async function loadAppDownloads() {
-    const tableBody = document.getElementById("appDownloadsTableBody");
+
+    const tableBody =
+        document.getElementById(
+            "appDownloadsTableBody"
+        );
+
 
     tableBody.innerHTML = `
         <tr>
-            <td colspan="6" class="loading-cell">
-                Loading app downloads...
+            <td colspan="6">
+                <div class="loading-message">
+                    Loading app downloads...
+                </div>
             </td>
         </tr>
     `;
 
-    // Get app download submissions
-    const { data: downloads, error: downloadsError } = await client
+
+    /*
+       Get app download submissions.
+    */
+
+    const {
+        data: downloads,
+        error: downloadsError
+    } = await client
         .from("app_downloads")
-        .select("id, user_id, app_id, app_email, status, created_at")
-        .order("created_at", { ascending: false });
+        .select(
+            "id, user_id, app_id, app_email, status, created_at"
+        )
+        .order(
+            "created_at",
+            {
+                ascending: false
+            }
+        );
+
 
     if (downloadsError) {
-        console.error(downloadsError);
+
+        console.error(
+            "App downloads error:",
+            downloadsError
+        );
 
         tableBody.innerHTML = `
             <tr>
-                <td colspan="6" class="empty-cell">
-                    Failed to load app downloads.
+                <td colspan="6">
+                    <div class="empty-message">
+                        Unable to load app downloads.
+                    </div>
                 </td>
             </tr>
         `;
@@ -1049,11 +1168,18 @@ async function loadAppDownloads() {
         return;
     }
 
-    if (!downloads || downloads.length === 0) {
+
+    if (
+        !downloads ||
+        downloads.length === 0
+    ) {
+
         tableBody.innerHTML = `
             <tr>
-                <td colspan="6" class="empty-cell">
-                    No app download submissions yet.
+                <td colspan="6">
+                    <div class="empty-message">
+                        No app download submissions found.
+                    </div>
                 </td>
             </tr>
         `;
@@ -1061,86 +1187,222 @@ async function loadAppDownloads() {
         return;
     }
 
-    // Get all user profiles needed
-    const userIds = [...new Set(downloads.map(item => item.user_id))];
 
-    const { data: profiles, error: profilesError } = await client
+    /*
+       Get user IDs.
+    */
+
+    const userIds =
+        [
+            ...new Set(
+                downloads.map(
+                    download =>
+                        download.user_id
+                )
+            )
+        ];
+
+
+    /*
+       Get profiles.
+    */
+
+    const {
+        data: profiles,
+        error: profilesError
+    } = await client
         .from("profiles")
         .select("id, email")
-        .in("id", userIds);
+        .in(
+            "id",
+            userIds
+        );
+
 
     if (profilesError) {
-        console.error(profilesError);
+
+        console.error(
+            "Profiles error:",
+            profilesError
+        );
+
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="empty-message">
+                        Unable to load user information.
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        return;
     }
 
-    // Get all apps needed
-    const appIds = [...new Set(downloads.map(item => item.app_id))];
 
-    const { data: apps, error: appsError } = await client
+    /*
+       Get app IDs.
+    */
+
+    const appIds =
+        [
+            ...new Set(
+                downloads.map(
+                    download =>
+                        download.app_id
+                )
+            )
+        ];
+
+
+    /*
+       Get app names.
+    */
+
+    const {
+        data: apps,
+        error: appsError
+    } = await client
         .from("download_apps")
-        .select("id, app_name")
-        .in("id", appIds);
+        .select(
+            "id, app_name"
+        )
+        .in(
+            "id",
+            appIds
+        );
+
 
     if (appsError) {
-        console.error(appsError);
+
+        console.error(
+            "Apps error:",
+            appsError
+        );
+
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="empty-message">
+                        Unable to load app information.
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        return;
     }
 
-    const profileMap = {};
-    const appMap = {};
 
-    (profiles || []).forEach(profile => {
-        profileMap[profile.id] = profile;
-    });
+    /*
+       Create lookup maps.
+    */
 
-    (apps || []).forEach(app => {
-        appMap[app.id] = app;
-    });
+    const profileMap =
+        new Map(
+            (profiles || []).map(
+                profile => [
+                    profile.id,
+                    profile
+                ]
+            )
+        );
 
-    tableBody.innerHTML = "";
 
-    downloads.forEach(download => {
-        const profile = profileMap[download.user_id];
-        const app = appMap[download.app_id];
+    const appMap =
+        new Map(
+            (apps || []).map(
+                app => [
+                    app.id,
+                    app
+                ]
+            )
+        );
 
-        const email = profile?.email || "Unknown";
-        const appName = app?.app_name || "Unknown App";
 
-        const date = new Date(download.created_at).toLocaleString();
+    /*
+       Build table.
+    */
 
-        let statusClass = "";
+    tableBody.innerHTML =
+        downloads.map(
+            download => {
 
-        if (download.status === "Approved") {
-            statusClass = "status-approved";
-        } else if (download.status === "Rejected") {
-            statusClass = "status-rejected";
-        } else {
-            statusClass = "status-processing";
-        }
+                const profile =
+                    profileMap.get(
+                        download.user_id
+                    ) || {};
 
-        const row = document.createElement("tr");
 
-        row.innerHTML = `
-            <td>${escapeHtml(email)}</td>
+                const app =
+                    appMap.get(
+                        download.app_id
+                    ) || {};
 
-            <td>${escapeHtml(appName)}</td>
 
-            <td>${escapeHtml(date)}</td>
+                const email =
+                    profile.email ||
+                    "Unknown";
 
-            <td>${escapeHtml(download.app_email)}</td>
 
-            <td>
-                <span class="status-badge ${statusClass}">
-                    ${escapeHtml(download.status)}
-                </span>
-            </td>
+                const appName =
+                    app.app_name ||
+                    "Unknown App";
 
-            <td>
-                ${
-                    download.status === "Pending"
+
+                const appEmail =
+                    download.app_email ||
+                    "Not provided";
+
+
+                const status =
+                    download.status ||
+                    "Pending";
+
+
+                const createdDate =
+                    new Date(
+                        download.created_at
+                    ).toLocaleString();
+
+
+                /*
+                   Status styling.
+                */
+
+                let statusClass =
+                    "status-processing";
+
+
+                if (
+                    status === "Approved"
+                ) {
+
+                    statusClass =
+                        "status-paid";
+
+                } else if (
+                    status === "Rejected"
+                ) {
+
+                    statusClass =
+                        "status-rejected";
+
+                }
+
+
+                /*
+                   Action buttons.
+                */
+
+                const actionButtons =
+                    status === "Pending"
+
                         ? `
                             <div class="action-buttons">
+
                                 <button
-                                    class="approve-button"
+                                    class="paid-button"
                                     onclick="approveAppDownload(${download.id})"
                                 >
                                     Approve
@@ -1152,73 +1414,146 @@ async function loadAppDownloads() {
                                 >
                                     Reject
                                 </button>
-                            </div>
-                        `
-                        : `
-                            <span class="processed-text">
-                                Processed
-                            </span>
-                        `
-                }
-            </td>
-        `;
 
-        tableBody.appendChild(row);
-    });
+                            </div>
+                          `
+
+                        : "—";
+
+
+                return `
+
+                    <tr>
+
+                        <td>
+                            ${escapeHtml(
+                                email
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                appName
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                createdDate
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                appEmail
+                            )}
+                        </td>
+
+                        <td>
+
+                            <span
+                                class="status ${statusClass}"
+                            >
+                                ${escapeHtml(
+                                    status
+                                )}
+                            </span>
+
+                        </td>
+
+                        <td>
+                            ${actionButtons}
+                        </td>
+
+                    </tr>
+
+                `;
+
+            }
+        ).join("");
 }
 
-
 async function approveAppDownload(downloadId) {
-    const confirmed = confirm(
-        "Approve this app download and pay the user?"
-    );
+
+    const confirmed =
+        confirm(
+            "Approve this app download and pay the user?"
+        );
 
     if (!confirmed) {
         return;
     }
 
-    const { error } = await client.rpc(
-        "approve_app_download",
-        {
-            p_download_id: downloadId
-        }
-    );
+    const { error } =
+        await client.rpc(
+            "approve_app_download",
+            {
+                p_download_id: downloadId
+            }
+        );
 
     if (error) {
-        alert(error.message);
+
+        console.error(
+            "Approve app download error:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Unable to approve app download."
+        );
+
         return;
     }
 
-    alert("App download approved and user paid.");
+    alert(
+        "App download approved and user paid."
+    );
 
-    loadAppDownloads();
+    await loadAppDownloads();
 }
 
 
 async function rejectAppDownload(downloadId) {
-    const confirmed = confirm(
-        "Reject this app download?"
-    );
+
+    const confirmed =
+        confirm(
+            "Reject this app download?"
+        );
 
     if (!confirmed) {
         return;
     }
 
-    const { error } = await client.rpc(
-        "reject_app_download",
-        {
-            p_download_id: downloadId
-        }
-    );
+    const { error } =
+        await client.rpc(
+            "reject_app_download",
+            {
+                p_download_id: downloadId
+            }
+        );
 
     if (error) {
-        alert(error.message);
+
+        console.error(
+            "Reject app download error:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Unable to reject app download."
+        );
+
         return;
     }
 
-    alert("App download rejected.");
+    alert(
+        "App download rejected."
+    );
 
-    loadAppDownloads();
+    await loadAppDownloads();
 }
 
         /* =========================
@@ -1258,7 +1593,6 @@ async function rejectAppDownload(downloadId) {
 
 
             await loadWithdrawals();
-            loadAppDownloads();
 
         }
 
