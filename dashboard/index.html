@@ -976,50 +976,60 @@
     class="download-apps-window"
 >
 
-    <div class="download-apps-content">
 
-        <div class="download-apps-header">
+<div class="download-apps-content">
 
-            <button
-                id="reviewAppsBack"
-                class="download-apps-back"
-            >
-                ←
-            </button>
+    <div class="download-apps-header">
 
-            <span class="download-apps-title">
-                Review Apps
-            </span>
-
-        </div>
-
-
-        <div
-            id="reviewAppsList"
-            class="download-apps-list"
+        <button
+            id="reviewAppsBack"
+            class="download-apps-back"
         >
+            ←
+        </button>
 
-            <div class="download-apps-loading">
-                Loading available apps...
-            </div>
+        <span class="download-apps-title">
+            Review Apps
+        </span>
 
-        </div>
+    </div>
 
 
-        <div class="download-apps-footer">
+    <div style="
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #555;
+        text-align: center;
+    ">
+        You have to download and install the app before you can leave a review.
+    </div>
 
-            <button
-                id="reviewAppsClose"
-                class="download-apps-close"
-            >
-                Close
-            </button>
 
+    <div
+        id="reviewAppsList"
+        class="download-apps-list"
+    >
+
+        <div class="download-apps-loading">
+            Loading available apps...
         </div>
 
     </div>
 
+
+    <div class="download-apps-footer">
+
+        <button
+            id="reviewAppsClose"
+            class="download-apps-close"
+        >
+            Close
+        </button>
+
+    </div>
+
 </div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -2113,199 +2123,344 @@ async function loadReviewApps() {
 
 
 /* =========================
-   SUBMIT APP REVIEW
+REVIEW APPS
 ========================= */
 
-async function submitAppReview(event) {
+const reviewAppsWindow = document.getElementById("reviewAppsWindow");
+const reviewAppsButton = document.getElementById("reviewAppsButton");
+const reviewAppsBack = document.getElementById("reviewAppsBack");
+const reviewAppsClose = document.getElementById("reviewAppsClose");
+const reviewAppsList = document.getElementById("reviewAppsList");
 
-    const button =
-        event.currentTarget;
-
-
-    const appId =
-        Number(
-            button.dataset.reviewAppId
-        );
+async function loadReviewApps() {
 
 
-    const ratingInput =
-        document.getElementById(
-            `reviewRating-${appId}`
-        );
+reviewAppsList.innerHTML = `
+    <div class="download-apps-loading">
+        Loading available apps...
+    </div>
+`;
+
+const {
+    data: apps,
+    error
+} = await client
+    .from("download_apps")
+    .select(`
+        id,
+        app_name,
+        review_description,
+        google_play_link,
+        reward
+    `)
+    .eq("active", true)
+    .eq("review", true)
+    .order("created_at", { ascending: false });
+
+if (error) {
+
+    console.error("Error loading review apps:", error);
+
+    reviewAppsList.innerHTML = `
+        <div class="download-apps-empty">
+            Unable to load review tasks.
+        </div>
+    `;
+
+    return;
+}
 
 
-    const reviewInput =
-        document.getElementById(
-            `reviewText-${appId}`
-        );
+if (!apps || apps.length === 0) {
 
+    reviewAppsList.innerHTML = `
+        <div class="download-apps-empty">
+            No review tasks available right now.
+        </div>
+    `;
+
+    return;
+}
+
+
+const { data: { user } } = await client.auth.getUser();
+
+if (!user) {
+    reviewAppsList.innerHTML = `
+        <div class="download-apps-empty">
+            Please log in first.
+        </div>
+    `;
+    return;
+}
+
+
+/* Get apps already reviewed by this user */
+
+const {
+    data: existingReviews,
+    error: reviewsError
+} = await client
+    .from("app_reviews")
+    .select("app_id")
+    .eq("user_id", user.id);
+
+
+if (reviewsError) {
+
+    console.error("Error checking reviews:", reviewsError);
+
+    reviewAppsList.innerHTML = `
+        <div class="download-apps-empty">
+            Unable to load your review tasks.
+        </div>
+    `;
+
+    return;
+}
+
+
+const reviewedAppIds = new Set(
+    (existingReviews || []).map(review => review.app_id)
+);
+
+
+const availableApps = apps.filter(
+    app => !reviewedAppIds.has(app.id)
+);
+
+
+if (availableApps.length === 0) {
+
+    reviewAppsList.innerHTML = `
+        <div class="download-apps-empty">
+            You have completed all available review tasks.
+        </div>
+    `;
+
+    return;
+}
+
+
+reviewAppsList.innerHTML = "";
+
+
+availableApps.forEach(app => {
+
+    const card = document.createElement("div");
+
+    card.className = "download-app-card";
+
+    card.innerHTML = `
+
+        <div class="download-app-card-header">
+
+            <span class="download-app-name">
+                ${escapeHtml(app.app_name)}
+            </span>
+
+            <span class="download-app-reward">
+                $${Number(app.reward).toFixed(2)}
+            </span>
+
+        </div>
+
+
+        <div class="download-app-description">
+            ${escapeHtml(app.review_description || "Download and review this app on Google Play.")}
+        </div>
+
+
+        <a
+            href="${escapeAttribute(app.google_play_link)}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="download-app-play"
+        >
+            Open Google Play
+        </a>
+
+
+        <div style="margin-top: 12px;">
+
+            <label
+                style="
+                    display: block;
+                    margin-bottom: 6px;
+                    font-size: 13px;
+                    font-weight: 600;
+                "
+            >
+                Review name
+            </label>
+
+            <input
+                type="text"
+                class="download-app-email review-name-input"
+                placeholder="Enter the name used for your review"
+                maxlength="100"
+            >
+
+        </div>
+
+
+        <button
+            class="download-app-submit review-done-button"
+            data-app-id="${app.id}"
+        >
+            Done
+        </button>
+
+
+        <div class="download-app-message"></div>
+
+    `;
+
+
+    const doneButton =
+        card.querySelector(".review-done-button");
+
+    const nameInput =
+        card.querySelector(".review-name-input");
 
     const message =
-        document.getElementById(
-            `reviewMessage-${appId}`
-        );
+        card.querySelector(".download-app-message");
 
 
-    const rating =
-        Number(
-            ratingInput.value
-        );
+    doneButton.addEventListener("click", async () => {
+
+        const name = nameInput.value.trim();
 
 
-    const reviewText =
-        reviewInput.value.trim();
-
-
-    if (!rating) {
-
-        message.textContent =
-            "Please select a rating.";
-
-        return;
-    }
-
-
-    if (!reviewText) {
-
-        message.textContent =
-            "Please write a review.";
-
-        return;
-    }
-
-
-    if (reviewText.length < 10) {
-
-        message.textContent =
-            "Your review must be at least 10 characters.";
-
-        return;
-    }
-
-
-    button.disabled = true;
-
-    button.textContent =
-        "Submitting...";
-
-
-    /* Get user */
-
-    const {
-        data: { user },
-        error: userError
-    } = await client.auth.getUser();
-
-
-    if (userError || !user) {
-
-        message.textContent =
-            "Your session has expired. Please log in again.";
-
-        button.disabled = false;
-
-        button.textContent =
-            "Submit Review";
-
-        return;
-    }
-
-
-    /* Make sure user actually downloaded app */
-
-    const {
-        data: download,
-        error: downloadError
-    } = await client
-        .from("app_downloads")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("app_id", appId)
-        .maybeSingle();
-
-
-    if (downloadError || !download) {
-
-        message.textContent =
-            "You must download and install this app before reviewing it.";
-
-        button.disabled = false;
-
-        button.textContent =
-            "Submit Review";
-
-        return;
-    }
-
-
-    /* Submit review */
-
-    const {
-        error
-    } = await client
-        .from("app_reviews")
-        .insert({
-
-            user_id: user.id,
-
-            app_id: appId,
-
-            rating: rating,
-
-            review_text: reviewText,
-
-            status: "Pending",
-
-            paid: false
-
-        });
-
-
-    if (error) {
-
-        console.error(
-            "App review submission error:",
-            error
-        );
-
-
-        if (error.code === "23505") {
+        if (!name) {
 
             message.textContent =
-                "You have already submitted a review for this app.";
+                "Please enter your review name.";
 
-        } else {
+            message.style.color = "#d9534f";
 
-            message.textContent =
-                "Unable to submit your review. Please try again.";
-
+            return;
         }
 
 
-        button.disabled = false;
+        doneButton.disabled = true;
+        doneButton.textContent = "Submitting...";
 
-        button.textContent =
-            "Submit Review";
-
-        return;
-    }
+        message.textContent = "";
 
 
-    /* Success */
+        const {
+            error
+        } = await client
+            .from("app_reviews")
+            .insert({
+                user_id: user.id,
+                app_id: app.id,
+                name: name,
+                status: "Pending"
+            });
 
-    message.textContent =
-        "Review submitted successfully. It is pending approval.";
+
+        if (error) {
+
+            console.error("Error submitting review:", error);
+
+            doneButton.disabled = false;
+            doneButton.textContent = "Done";
+
+            if (error.code === "23505") {
+
+                message.textContent =
+                    "You have already submitted this review.";
+
+            } else {
+
+                message.textContent =
+                    "Unable to submit review. Please try again.";
+
+            }
+
+            message.style.color = "#d9534f";
+
+            return;
+        }
 
 
-    button.textContent =
-        "Submitted";
+        message.textContent =
+            "Review submitted successfully!";
+
+        message.style.color = "#28a745";
+
+        doneButton.textContent = "Submitted";
 
 
-    reviewInput.disabled = true;
+        setTimeout(() => {
+            card.remove();
 
-    ratingInput.disabled = true;
+            if (reviewAppsList.children.length === 0) {
+
+                reviewAppsList.innerHTML = `
+                    <div class="download-apps-empty">
+                        You have completed all available review tasks.
+                    </div>
+                `;
+
+            }
+
+        }, 800);
+
+    });
+
+
+    reviewAppsList.appendChild(card);
+
+});
+
 
 }
+
+/* Open Review Apps */
+
+if (reviewAppsButton) {
+
+
+reviewAppsButton.addEventListener("click", async () => {
+
+    reviewAppsWindow.style.display = "flex";
+
+    await loadReviewApps();
+
+});
+
+}
+
+/* Back button */
+
+if (reviewAppsBack) {
+
+
+reviewAppsBack.addEventListener("click", () => {
+
+    reviewAppsWindow.style.display = "none";
+
+});
+
+}
+
+/* Close button */
+
+if (reviewAppsClose) {
+
+
+reviewAppsClose.addEventListener("click", () => {
+
+    reviewAppsWindow.style.display = "none";
+
+});
+
+
+}
+
 
 </script>
 
