@@ -178,6 +178,29 @@
         </div>
     </div>
 
+<div id="mobileBanner" class="mobile-banner"></div>
+
+<script>
+if (window.innerWidth <= 767) {
+
+    window.atOptions = {
+        'key' : '8a5a2a428462459edf6bf755d2fe2cf3',
+        'format' : 'iframe',
+        'height' : 50,
+        'width' : 320,
+        'params' : {}
+    };
+
+    const bannerScript = document.createElement("script");
+
+    bannerScript.src =
+        "https://www.highrevenueformat.com/8a5a2a428462459edf6bf755d2fe2cf3/invoke.js";
+
+    document.getElementById("mobileBanner")
+        .appendChild(bannerScript);
+}
+</script> 
+
 
     <div class="container">
 
@@ -219,29 +242,6 @@
             </div>
 
         </div>
-
-<div id="mobileBanner" class="mobile-banner"></div>
-
-<script>
-if (window.innerWidth <= 767) {
-
-    window.atOptions = {
-        'key' : '8a5a2a428462459edf6bf755d2fe2cf3',
-        'format' : 'iframe',
-        'height' : 50,
-        'width' : 320,
-        'params' : {}
-    };
-
-    const bannerScript = document.createElement("script");
-
-    bannerScript.src =
-        "https://www.highrevenueformat.com/8a5a2a428462459edf6bf755d2fe2cf3/invoke.js";
-
-    document.getElementById("mobileBanner")
-        .appendChild(bannerScript);
-}
-</script> 
 
 
         <!-- Change Password -->
@@ -291,6 +291,45 @@ if (window.innerWidth <= 767) {
             </div>
 
         </div>
+
+<style>
+.ad-container {
+    width: 728px;
+    height: 90px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+@media (max-width: 767px) {
+    .ad-container {
+        width: 320px;
+        height: 50px;
+    }
+
+    .ad-container iframe {
+        transform: scale(0.4395);
+        transform-origin: top left;
+        width: 728px !important;
+        height: 90px !important;
+    }
+}
+</style>
+
+<div class="ad-container">
+
+    <script>
+      atOptions = {
+        'key' : '08b3e0f70a2aa368598746b3c7a998cc',
+        'format' : 'iframe',
+        'height' : 90,
+        'width' : 728,
+        'params' : {}
+      };
+    </script>
+
+    <script src="https://www.highrevenueformat.com/08b3e0f70a2aa368598746b3c7a998cc/invoke.js"></script>
+
+</div>
 
 
         <!-- Payment Method -->
