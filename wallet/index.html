@@ -183,6 +183,23 @@
             color: #80606a;
             margin: 25px 0 35px;
         }
+
+.mobile-banner {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .mobile-banner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        min-height: 50px;
+        margin: 15px 0;
+        overflow: hidden;
+    }
+}
+        
     </style>
 </head>
 
@@ -249,6 +266,29 @@
             </div>
 
         </div>
+
+<div id="mobileBanner" class="mobile-banner"></div>
+
+<script>
+if (window.innerWidth <= 767) {
+
+    window.atOptions = {
+        'key' : '8a5a2a428462459edf6bf755d2fe2cf3',
+        'format' : 'iframe',
+        'height' : 50,
+        'width' : 320,
+        'params' : {}
+    };
+
+    const bannerScript = document.createElement("script");
+
+    bannerScript.src =
+        "https://www.highrevenueformat.com/8a5a2a428462459edf6bf755d2fe2cf3/invoke.js";
+
+    document.getElementById("mobileBanner")
+        .appendChild(bannerScript);
+}
+</script>       
 
 
         <div class="card">
