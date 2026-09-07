@@ -447,6 +447,47 @@
 
 </section>
 
+<!-- =========================
+     APP REVIEWS
+========================= -->
+
+<section id="appReviewsSection" class="admin-section">
+
+
+<h2>App Reviews</h2>
+
+<div class="table-container">
+
+    <table class="withdrawal-table">
+
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>App Name</th>
+                <th>Date</th>
+                <th>Review Name</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody id="appReviewsTableBody">
+
+            <tr>
+                <td colspan="6" class="loading-message">
+                    Loading reviews...
+                </td>
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+</section>
+
+
     </main>
 
 
@@ -1556,6 +1597,313 @@ async function rejectAppDownload(downloadId) {
     await loadAppDownloads();
 }
 
+/* =========================
+APP REVIEWS
+========================= */
+
+async function loadAppReviews() {
+
+
+const tableBody =
+    document.getElementById("appReviewsTableBody");
+
+if (!tableBody) return;
+
+
+tableBody.innerHTML = `
+    <tr>
+        <td colspan="6" class="loading-message">
+            Loading reviews...
+        </td>
+    </tr>
+`;
+
+
+const {
+    data: reviews,
+    error
+} = await client
+    .from("app_reviews")
+    .select(`
+        id,
+        user_id,
+        app_id,
+        name,
+        status,
+        created_at
+    `)
+    .order("created_at", { ascending: false });
+
+
+if (error) {
+
+    console.error("Error loading app reviews:", error);
+
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="6" class="loading-message">
+                Unable to load reviews.
+            </td>
+        </tr>
+    `;
+
+    return;
+}
+
+
+if (!reviews || reviews.length === 0) {
+
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="6" class="empty-message">
+                No app reviews yet.
+            </td>
+        </tr>
+    `;
+
+    return;
+}
+
+
+/* Get user emails */
+
+const userIds = [
+    ...new Set(reviews.map(review => review.user_id))
+];
+
+
+const {
+    data: profiles,
+    error: profilesError
+} = await client
+    .from("profiles")
+    .select("id, email")
+    .in("id", userIds);
+
+
+if (profilesError) {
+    console.error("Error loading review users:", profilesError);
+}
+
+
+/* Get app names */
+
+const appIds = [
+    ...new Set(reviews.map(review => review.app_id))
+];
+
+
+const {
+    data: apps,
+    error: appsError
+} = await client
+    .from("download_apps")
+    .select("id, app_name")
+    .in("id", appIds);
+
+
+if (appsError) {
+    console.error("Error loading review apps:", appsError);
+}
+
+
+const profileMap = new Map(
+    (profiles || []).map(profile => [
+        profile.id,
+        profile.email
+    ])
+);
+
+
+const appMap = new Map(
+    (apps || []).map(app => [
+        app.id,
+        app.app_name
+    ])
+);
+
+
+tableBody.innerHTML = "";
+
+
+reviews.forEach(review => {
+
+    const row = document.createElement("tr");
+
+
+    const email =
+        profileMap.get(review.user_id) || "Unknown";
+
+
+    const appName =
+        appMap.get(review.app_id) || "Unknown";
+
+
+    const date =
+        new Date(review.created_at).toLocaleString();
+
+
+    let actionHTML = "—";
+
+
+    if (review.status === "Pending") {
+
+        actionHTML = `
+            <div class="action-buttons">
+
+                <button
+                    class="paid-button"
+                    onclick="approveAppReview(${review.id})"
+                >
+                    Approve
+                </button>
+
+                <button
+                    class="reject-button"
+                    onclick="rejectAppReview(${review.id})"
+                >
+                    Reject
+                </button>
+
+            </div>
+        `;
+    }
+
+
+    let statusClass = "status-processing";
+
+
+    if (review.status === "Approved") {
+        statusClass = "status-paid";
+    }
+
+    if (review.status === "Rejected") {
+        statusClass = "status-rejected";
+    }
+
+
+    row.innerHTML = `
+
+        <td>
+            ${escapeHtml(email)}
+        </td>
+
+        <td>
+            ${escapeHtml(appName)}
+        </td>
+
+        <td>
+            ${escapeHtml(date)}
+        </td>
+
+        <td>
+            ${escapeHtml(review.name)}
+        </td>
+
+        <td>
+            <span class="status ${statusClass}">
+                ${escapeHtml(review.status)}
+            </span>
+        </td>
+
+        <td>
+            ${actionHTML}
+        </td>
+
+    `;
+
+
+    tableBody.appendChild(row);
+
+});
+
+
+}
+
+/* =========================
+APPROVE REVIEW
+========================= */
+
+async function approveAppReview(reviewId) {
+
+
+if (!confirm("Approve this review and pay the user?")) {
+    return;
+}
+
+
+const {
+    error
+} = await client.rpc(
+    "approve_app_review",
+    {
+        p_review_id: reviewId
+    }
+);
+
+
+if (error) {
+
+    console.error("Error approving review:", error);
+
+    alert(
+        error.message ||
+        "Unable to approve review."
+    );
+
+    return;
+}
+
+
+alert("Review approved and user paid.");
+
+await loadAppReviews();
+
+
+}
+
+/* =========================
+REJECT REVIEW
+========================= */
+
+async function rejectAppReview(reviewId) {
+
+
+if (!confirm("Reject this review?")) {
+    return;
+}
+
+
+const {
+    error
+} = await client.rpc(
+    "reject_app_review",
+    {
+        p_review_id: reviewId
+    }
+);
+
+
+if (error) {
+
+    console.error("Error rejecting review:", error);
+
+    alert(
+        error.message ||
+        "Unable to reject review."
+    );
+
+    return;
+}
+
+
+alert("Review rejected.");
+
+await loadAppReviews();
+
+}
+
+
         /* =========================
            FUTURE TABS
         ========================= */
@@ -1593,6 +1941,8 @@ async function rejectAppDownload(downloadId) {
 
 
             await loadWithdrawals();
+            await loadAppDownloads();
+            await loadAppReviews();
 
         }
 
