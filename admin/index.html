@@ -445,13 +445,12 @@
 
     </div>
 
-</section>
 
 <!-- =========================
      APP REVIEWS
 ========================= -->
 
-<section id="appReviewsSection" class="admin-section">
+<div id="appReviewsSection" class="admin-section">
 
 
 <h2>App Reviews</h2>
@@ -483,6 +482,7 @@
 
     </table>
 
+</div>
 </div>
 
 </section>
@@ -612,6 +612,7 @@ appDownloadsTab.addEventListener(
         );
 
         await loadAppDownloads();
+        await loadAppReviews();
     }
 );
 
