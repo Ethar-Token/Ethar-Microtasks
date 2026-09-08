@@ -818,29 +818,24 @@
 
             </div>
 
-<div id="mobileBanner" class="mobile-banner"></div>
+<div class="mobile-banner"></div>
 
 <script>
 if (window.innerWidth <= 767) {
-
-    var atOptions = {
-        'key' : '8a5a2a428462459edf6bf755d2fe2cf3',
-        'format' : 'iframe',
-        'height' : 50,
-        'width' : 320,
-        'params' : {}
-    };
-
-    var mobileScript = document.createElement("script");
-
-    mobileScript.src =
-        "https://www.highrevenueformat.com/8a5a2a428462459edf6bf755d2fe2cf3/invoke.js";
-    mobileScript.async = true;
-
-    document.getElementById("mobileBanner")
-        .appendChild(mobileScript);
+    document.write(`
+        <script>
+        atOptions = {
+          'key' : '8a5a2a428462459edf6bf755d2fe2cf3',
+          'format' : 'iframe',
+          'height' : 50,
+          'width' : 320,
+          'params' : {}
+        };
+        <\/script>
+        <script src="https://www.highrevenueformat.com/8a5a2a428462459edf6bf755d2fe2cf3/invoke.js"><\/script>
+    `);
 }
-</script> 
+</script>
             
 
             <!-- TASK 3 -->
