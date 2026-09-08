@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Ethar Microtasks</title>
+    <title>ETHAR Microtasks</title>
 
     <style>
         * {
@@ -547,6 +547,22 @@
             }
         }
 
+.mobile-banner {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .mobile-banner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        min-height: 50px;
+        margin: 15px 0;
+        overflow: hidden;
+    }
+}
+
 /* Desktop side ads */
 
 .desktop-ads {
@@ -802,6 +818,29 @@
 
             </div>
 
+<div id="mobileBanner" class="mobile-banner"></div>
+
+<script>
+if (window.innerWidth <= 767) {
+
+    window.atOptions = {
+        'key' : '8a5a2a428462459edf6bf755d2fe2cf3',
+        'format' : 'iframe',
+        'height' : 50,
+        'width' : 320,
+        'params' : {}
+    };
+
+    const bannerScript = document.createElement("script");
+
+    bannerScript.src =
+        "https://www.highrevenueformat.com/8a5a2a428462459edf6bf755d2fe2cf3/invoke.js";
+
+    document.getElementById("mobileBanner")
+        .appendChild(bannerScript);
+}
+</script> 
+            
 
             <!-- TASK 3 -->
 
@@ -886,6 +925,29 @@
                 </div>
 
             </div>
+
+<div id="mobileBanner" class="mobile-banner"></div>
+
+<script>
+if (window.innerWidth <= 767) {
+
+    window.atOptions = {
+        'key' : 'f15a01fd59c1f566cb474f8b5d85ef10',
+        'format' : 'iframe',
+        'height' : 50,
+        'width' : 320,
+        'params' : {}
+    };
+
+    const bannerScript = document.createElement("script");
+
+    bannerScript.src =
+        "https://www.highrevenueformat.com/f15a01fd59c1f566cb474f8b5d85ef10/invoke.js";
+
+    document.getElementById("mobileBanner")
+        .appendChild(bannerScript);
+}
+</script> 
 
             <!-- TASK 6 -->
 
