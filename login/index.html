@@ -126,10 +126,74 @@
             margin-top: 15px;
             font-size: 14px;
         }
+
+/* Desktop side ads */
+
+.desktop-ads {
+    display: none;
+}
+
+@media (min-width: 1200px) {
+
+    .desktop-ads {
+        display: flex;
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        align-items: center;
+        z-index: 10;
+    }
+
+    .left-ad {
+        left: 20px;
+        width: 160px;
+        height: 600px;
+    }
+
+    .right-ad {
+        right: 20px;
+        width: 300px;
+        min-height: 150px;
+    }
+
+}
+
     </style>
 </head>
 
 <body>
+
+<!-- LEFT DESKTOP AD -->
+
+<div class="desktop-ads left-ad">
+
+    <script>
+      atOptions = {
+        'key' : 'd967e28f3a296dc88a0e629d3d9b3d15',
+        'format' : 'iframe',
+        'height' : 600,
+        'width' : 160,
+        'params' : {}
+      };
+    </script>
+
+    <script src="https://www.highrevenueformat.com/d967e28f3a296dc88a0e629d3d9b3d15/invoke.js"></script>
+
+</div>
+
+<!-- RIGHT DESKTOP NATIVE AD -->
+
+<div class="desktop-ads right-ad">
+
+    <script async="async" data-cfasync="false"
+        src="https://pl31235972.profitableratecpmnetwork.com/f719afe2dcacea80de174953ae5c62da/invoke.js">
+    </script>
+
+    <div id="container-f719afe2dcacea80de174953ae5c62da"></div>
+
+</div>
+
+
 
     <div class="login-box">
 
