@@ -527,6 +527,15 @@
     overflow: hidden;
 }
 
+/* Vertical layout for YouTube Shorts */
+
+.youtube-player-box.youtube-short {
+    width: min(100%, 360px, 38vh);
+    max-width: none;
+    aspect-ratio: 9 / 16;
+    flex: 0 0 auto;
+}
+
 .youtube-player-box #youtubePlayer,
 .youtube-player-box iframe {
     width: 100%;
@@ -2713,14 +2722,22 @@ async function prepareYoutubePlayer(videoId) {
 
         await youtubePlayerReadyPromise;
 
-    } else {
+} else {
 
-        await youtubePlayerReadyPromise;
+    await youtubePlayerReadyPromise;
 
-        // Cue the next video without automatically playing it.
-        youtubePlayer.cueVideoById(videoId);
+    // Resize the player to fit the current video's layout.
+    const playerBox = document.querySelector(".youtube-player-box");
 
-    }
+    youtubePlayer.setSize(
+        playerBox.clientWidth,
+        playerBox.clientHeight
+    );
+
+    // Load the next video without automatically playing it.
+    youtubePlayer.cueVideoById(videoId);
+
+}
 
 }
 
@@ -2745,6 +2762,16 @@ async function loadYoutubeTask() {
 
     youtubeTaskTitle.textContent =
         currentYoutubeTask.title;
+
+    // Detect Shorts and switch to a vertical video layout.
+    const playerBox = document.querySelector(".youtube-player-box");
+
+    playerBox.classList.toggle(
+        "youtube-short",
+        String(currentYoutubeTask.youtube_url)
+            .toLowerCase()
+            .includes("/shorts/")
+    );
 
     updateYoutubeCountdown();
 
@@ -2822,10 +2849,13 @@ if (watchYoutubeButton) {
             }
 
             // Keep all active videos, including previously watched videos.
+            // Start with a randomly selected video.
             youtubeTasks = data;
 
-            currentYoutubeIndex = 0;
-
+            currentYoutubeIndex = Math.floor(
+                Math.random() * youtubeTasks.length
+            );
+            
             youtubeTaskWindow.style.display = "flex";
 
             await loadYoutubeTask();
@@ -2918,7 +2948,7 @@ youtubeDoneButton.addEventListener("click", async function () {
 });
 
 
-/* USER CLICKS NEXT */
+/* USER CLICKS NEXT - RANDOM VIDEO */
 
 youtubeNextButton.addEventListener("click", async function () {
 
@@ -2926,12 +2956,21 @@ youtubeNextButton.addEventListener("click", async function () {
         return;
     }
 
-    // Move to the next video. Cycle back to the beginning when needed.
-    currentYoutubeIndex++;
+    // Choose randomly, avoiding the immediately previous video
+    // whenever there is more than one available video.
+    if (youtubeTasks.length > 1) {
 
-    if (currentYoutubeIndex >= youtubeTasks.length) {
+        let randomIndex;
 
-        currentYoutubeIndex = 0;
+        do {
+
+            randomIndex = Math.floor(
+                Math.random() * youtubeTasks.length
+            );
+
+        } while (randomIndex === currentYoutubeIndex);
+
+        currentYoutubeIndex = randomIndex;
 
     }
 
