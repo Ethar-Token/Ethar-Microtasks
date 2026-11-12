@@ -504,6 +504,47 @@
             cursor: not-allowed;
         }
 
+/* YOUTUBE TASK WINDOW */
+
+.youtube-task-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    overflow-y: auto;
+    background: #fff;
+}
+
+.youtube-player-box {
+    width: 100%;
+    max-width: 900px;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.youtube-player-box #youtubePlayer,
+.youtube-player-box iframe {
+    width: 100%;
+    height: 100%;
+}
+
+.youtube-countdown {
+    font-size: 24px;
+    font-weight: 700;
+    color: #68414d;
+}
+
+.youtube-task-status {
+    font-size: 14px;
+    color: #68414d;
+    text-align: center;
+}
+
         @media (max-width: 700px) {
 
             .task-window {
@@ -800,24 +841,24 @@ if (window.innerWidth <= 767) {
             <div class="task-card">
 
                 <div class="task-icon">
-                    📱
+                    ▶️
                 </div>
 
-                <h2>Complete App Milestones</h2>
+                <h2>Watch YouTube Videos</h2>
 
                 <p>
-                    Reach levels or complete required tasks in an app.
+                    Watch YouTube videos and earn rewards for the required viewing time.
                 </p>
 
                 <div class="task-bottom">
 
                     <span class="reward">
-                        $0.10 - $1.50
+                        $0.02 - $1.50 per minute
                     </span>
 
-                    <button class="task-button">
-                        Coming Soon
-                    </button>
+                <button id="watchYoutubeButton" class="task-button">
+                     Watch Videos
+                </button>
 
                 </div>
 
@@ -1055,6 +1096,63 @@ if (window.innerWidth <= 767) {
             <button
                 class="next-button"
                 id="nextButton"
+                disabled>
+                Next
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- YOUTUBE TASK WINDOW -->
+
+<div class="task-window" id="youtubeTaskWindow">
+
+    <div class="task-window-content">
+
+        <div class="task-window-header">
+
+            <button class="task-back" id="youtubeTaskBack">
+                ←
+            </button>
+
+            <div class="task-window-title" id="youtubeTaskTitle">
+                Watch YouTube Videos
+            </div>
+
+        </div>
+
+        <div class="youtube-task-body">
+
+            <div class="youtube-player-box">
+                <div id="youtubePlayer"></div>
+            </div>
+
+            <div class="youtube-countdown" id="youtubeCountdown">
+                Time remaining: 00:00
+            </div>
+
+            <div class="youtube-task-status" id="youtubeTaskStatus">
+                Press Play to start watching.
+            </div>
+
+        </div>
+
+        <div class="task-window-footer">
+
+            <button
+                class="done-button"
+                id="youtubeDoneButton"
+                disabled>
+                Done
+            </button>
+
+            <button
+                class="next-button"
+                id="youtubeNextButton"
                 disabled>
                 Next
             </button>
@@ -2207,6 +2305,626 @@ reviewAppsClose.addEventListener("click", () => {
 
 
 }
+
+
+/* =========================================
+   YOUTUBE WATCH TASKS
+========================================= */
+
+// Get the YouTube task window elements.
+const watchYoutubeButton = document.getElementById("watchYoutubeButton");
+const youtubeTaskWindow = document.getElementById("youtubeTaskWindow");
+const youtubeTaskBack = document.getElementById("youtubeTaskBack");
+const youtubeTaskTitle = document.getElementById("youtubeTaskTitle");
+const youtubeCountdown = document.getElementById("youtubeCountdown");
+const youtubeTaskStatus = document.getElementById("youtubeTaskStatus");
+const youtubeDoneButton = document.getElementById("youtubeDoneButton");
+const youtubeNextButton = document.getElementById("youtubeNextButton");
+
+// YouTube task information.
+let youtubeTasks = [];
+let currentYoutubeIndex = 0;
+let currentYoutubeTask = null;
+let youtubeRewarded = false;
+
+// YouTube player and countdown variables.
+let youtubePlayer = null;
+let youtubePlayerReadyPromise = null;
+let youtubeApiPromise = null;
+let youtubeTimerInterval = null;
+let youtubeLastStartedAt = null;
+let youtubeRemainingMs = 0;
+
+
+/* LOAD YOUTUBE PLAYER API */
+
+function loadYoutubeAPI() {
+
+    if (window.YT && window.YT.Player) {
+        return Promise.resolve();
+    }
+
+    if (youtubeApiPromise) {
+        return youtubeApiPromise;
+    }
+
+    youtubeApiPromise = new Promise((resolve, reject) => {
+
+        const previousCallback = window.onYouTubeIframeAPIReady;
+
+        window.onYouTubeIframeAPIReady = function () {
+
+            if (typeof previousCallback === "function") {
+                previousCallback();
+            }
+
+            resolve();
+        };
+
+        const script = document.createElement("script");
+
+        script.src = "https://www.youtube.com/iframe_api";
+
+        script.onerror = function () {
+            reject(new Error("Unable to load YouTube Player API."));
+        };
+
+        document.head.appendChild(script);
+
+    });
+
+    return youtubeApiPromise;
+}
+
+
+/* EXTRACT YOUTUBE VIDEO ID */
+
+function getYoutubeVideoId(url) {
+
+    try {
+
+        const parsedUrl = new URL(url);
+
+        let videoId = "";
+
+        if (parsedUrl.hostname.includes("youtu.be")) {
+
+            videoId = parsedUrl.pathname.substring(1);
+
+        } else {
+
+            videoId = parsedUrl.searchParams.get("v") || "";
+
+            if (!videoId) {
+
+                const match = parsedUrl.pathname.match(
+                    /^\/(embed|shorts|live)\/([^/?]+)/
+                );
+
+                if (match) {
+                    videoId = match[2];
+                }
+
+            }
+
+        }
+
+        return /^[a-zA-Z0-9_-]{11}$/.test(videoId)
+            ? videoId
+            : null;
+
+    } catch (error) {
+
+        return null;
+
+    }
+
+}
+
+
+/* FORMAT COUNTDOWN */
+
+function formatYoutubeTime(milliseconds) {
+
+    const totalSeconds = Math.ceil(milliseconds / 1000);
+
+    const minutes = Math.floor(totalSeconds / 60);
+
+    const seconds = totalSeconds % 60;
+
+    const hours = Math.floor(minutes / 60);
+
+    const remainingMinutes = minutes % 60;
+
+    if (hours > 0) {
+
+        return (
+            String(hours).padStart(2, "0") + ":" +
+            String(remainingMinutes).padStart(2, "0") + ":" +
+            String(seconds).padStart(2, "0")
+        );
+
+    }
+
+    return (
+        String(minutes).padStart(2, "0") + ":" +
+        String(seconds).padStart(2, "0")
+    );
+
+}
+
+
+/* UPDATE COUNTDOWN DISPLAY */
+
+function updateYoutubeCountdown() {
+
+    youtubeCountdown.textContent =
+        "Time remaining: " +
+        formatYoutubeTime(youtubeRemainingMs);
+
+}
+
+
+/* COMPLETE COUNTDOWN */
+
+function finishYoutubeCountdown() {
+
+    youtubeRemainingMs = 0;
+
+    if (youtubeTimerInterval !== null) {
+
+        clearInterval(youtubeTimerInterval);
+
+        youtubeTimerInterval = null;
+
+    }
+
+    youtubeLastStartedAt = null;
+
+    updateYoutubeCountdown();
+
+    if (!youtubeRewarded) {
+
+        youtubeDoneButton.disabled = false;
+
+        youtubeTaskStatus.textContent =
+            "Viewing time completed! Click Done to claim your reward.";
+
+    }
+
+}
+
+
+/* PAUSE COUNTDOWN */
+
+function pauseYoutubeCountdown() {
+
+    if (youtubeTimerInterval === null) {
+        return;
+    }
+
+    const elapsed = Date.now() - youtubeLastStartedAt;
+
+    youtubeRemainingMs = Math.max(
+        0,
+        youtubeRemainingMs - elapsed
+    );
+
+    clearInterval(youtubeTimerInterval);
+
+    youtubeTimerInterval = null;
+
+    youtubeLastStartedAt = null;
+
+    updateYoutubeCountdown();
+
+    if (youtubeRemainingMs <= 0) {
+
+        finishYoutubeCountdown();
+
+    }
+
+}
+
+
+/* START COUNTDOWN */
+
+function startYoutubeCountdown() {
+
+    if (
+        youtubeTimerInterval !== null ||
+        youtubeRemainingMs <= 0 ||
+        youtubeRewarded
+    ) {
+        return;
+    }
+
+    youtubeLastStartedAt = Date.now();
+
+    youtubeTaskStatus.textContent =
+        "Video playing. Your viewing time is counting.";
+
+    youtubeTimerInterval = setInterval(() => {
+
+        const now = Date.now();
+
+        const elapsed = now - youtubeLastStartedAt;
+
+        youtubeLastStartedAt = now;
+
+        youtubeRemainingMs = Math.max(
+            0,
+            youtubeRemainingMs - elapsed
+        );
+
+        updateYoutubeCountdown();
+
+        if (youtubeRemainingMs <= 0) {
+
+            finishYoutubeCountdown();
+
+        }
+
+    }, 200);
+
+}
+
+
+/* HANDLE YOUTUBE PLAYER EVENTS */
+
+function handleYoutubePlayerState(event) {
+
+    const state = event.data;
+
+    if (state === window.YT.PlayerState.PLAYING) {
+
+        startYoutubeCountdown();
+
+    }
+
+    else if (state === window.YT.PlayerState.PAUSED) {
+
+        pauseYoutubeCountdown();
+
+        if (youtubeRemainingMs > 0) {
+
+            youtubeTaskStatus.textContent =
+                "Video paused. Your countdown is paused too.";
+
+        }
+
+    }
+
+    else if (state === window.YT.PlayerState.BUFFERING) {
+
+        pauseYoutubeCountdown();
+
+        youtubeTaskStatus.textContent =
+            "Loading video. Countdown paused.";
+
+    }
+
+    else if (state === window.YT.PlayerState.ENDED) {
+
+        pauseYoutubeCountdown();
+
+        if (youtubeRemainingMs > 0) {
+
+            youtubeTaskStatus.textContent =
+                "Video ended. Replay it to finish the remaining viewing time.";
+
+        }
+
+    }
+
+}
+
+
+/* HANDLE VIDEO ERRORS */
+
+function handleYoutubePlayerError(event) {
+
+    pauseYoutubeCountdown();
+
+    youtubeTaskStatus.textContent =
+        "This video cannot be played here. Please contact support.";
+
+    console.error("YouTube player error:", event.data);
+
+}
+
+
+/* CREATE OR LOAD YOUTUBE PLAYER */
+
+async function prepareYoutubePlayer(videoId) {
+
+    await loadYoutubeAPI();
+
+    // Create the player only once.
+    if (!youtubePlayer) {
+
+        youtubePlayerReadyPromise = new Promise((resolve) => {
+
+            youtubePlayer = new YT.Player("youtubePlayer", {
+
+                width: "100%",
+                height: "100%",
+
+                videoId: videoId,
+
+                playerVars: {
+                    autoplay: 0,
+                    controls: 1,
+                    rel: 0,
+                    playsinline: 1
+                },
+
+                events: {
+
+                    onReady: function () {
+
+                        youtubeTaskStatus.textContent =
+                            "Press Play to start watching.";
+
+                        resolve();
+
+                    },
+
+                    onStateChange: handleYoutubePlayerState,
+
+                    onError: handleYoutubePlayerError
+
+                }
+
+            });
+
+        });
+
+        await youtubePlayerReadyPromise;
+
+    } else {
+
+        await youtubePlayerReadyPromise;
+
+        // Cue the next video without automatically playing it.
+        youtubePlayer.cueVideoById(videoId);
+
+    }
+
+}
+
+
+/* LOAD CURRENT VIDEO TASK */
+
+async function loadYoutubeTask() {
+
+    pauseYoutubeCountdown();
+
+    currentYoutubeTask = youtubeTasks[currentYoutubeIndex];
+
+    youtubeRewarded = false;
+
+    youtubeRemainingMs =
+        Number(currentYoutubeTask.duration_seconds) * 1000;
+
+    youtubeDoneButton.disabled = true;
+    youtubeNextButton.disabled = true;
+
+    youtubeDoneButton.textContent = "Done";
+
+    youtubeTaskTitle.textContent =
+        currentYoutubeTask.title;
+
+    updateYoutubeCountdown();
+
+    youtubeTaskStatus.textContent =
+        "Loading video...";
+
+    const videoId = getYoutubeVideoId(
+        currentYoutubeTask.youtube_url
+    );
+
+    if (!videoId) {
+
+        youtubeTaskStatus.textContent =
+            "Invalid YouTube link. Please contact support.";
+
+        console.error(
+            "Invalid YouTube URL:",
+            currentYoutubeTask.youtube_url
+        );
+
+        return;
+
+    }
+
+    try {
+
+        await prepareYoutubePlayer(videoId);
+
+    } catch (error) {
+
+        console.error(error);
+
+        youtubeTaskStatus.textContent =
+            "Unable to load YouTube. Please refresh and try again.";
+
+    }
+
+}
+
+
+/* OPEN YOUTUBE TASKS */
+
+if (watchYoutubeButton) {
+
+    watchYoutubeButton.addEventListener("click", async function () {
+
+        watchYoutubeButton.disabled = true;
+
+        watchYoutubeButton.textContent = "Loading...";
+
+        try {
+
+            const { data, error } = await client
+                .from("youtube_tasks")
+                .select("id, title, youtube_url, duration_seconds")
+                .eq("active", true)
+                .order("created_at", { ascending: true });
+
+            if (error) {
+
+                console.error("YouTube task error:", error);
+
+                alert("Unable to load YouTube tasks.");
+
+                return;
+
+            }
+
+            if (!data || data.length === 0) {
+
+                alert("There are no YouTube videos available right now.");
+
+                return;
+
+            }
+
+            // Keep all active videos, including previously watched videos.
+            youtubeTasks = data;
+
+            currentYoutubeIndex = 0;
+
+            youtubeTaskWindow.style.display = "flex";
+
+            await loadYoutubeTask();
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert("Something went wrong loading YouTube tasks.");
+
+        } finally {
+
+            watchYoutubeButton.disabled = false;
+
+            watchYoutubeButton.textContent = "Watch Videos";
+
+        }
+
+    });
+
+}
+
+
+/* USER CLICKS DONE */
+
+youtubeDoneButton.addEventListener("click", async function () {
+
+    if (
+        !currentYoutubeTask ||
+        youtubeRemainingMs > 0 ||
+        youtubeRewarded
+    ) {
+        return;
+    }
+
+    youtubeDoneButton.disabled = true;
+
+    youtubeDoneButton.textContent = "Adding...";
+
+    const { data, error } = await client.rpc(
+        "complete_youtube_task",
+        {
+            p_task_id: currentYoutubeTask.id,
+
+            p_watched_seconds: Number(
+                currentYoutubeTask.duration_seconds
+            )
+        }
+    );
+
+    if (error) {
+
+        console.error("YouTube reward error:", error);
+
+        alert("Unable to credit your reward. Please try again.");
+
+        youtubeDoneButton.disabled = false;
+
+        youtubeDoneButton.textContent = "Done";
+
+        return;
+
+    }
+
+    youtubeRewarded = true;
+
+    // Display the updated wallet balance.
+    if (
+        data &&
+        typeof data === "object" &&
+        data.wallet_balance !== undefined
+    ) {
+
+        document.getElementById("walletBalance").textContent =
+            Number(data.wallet_balance).toFixed(2);
+
+    } else {
+
+        await loadDashboard();
+
+    }
+
+    youtubeDoneButton.textContent = "Done";
+
+    youtubeNextButton.disabled = false;
+
+    youtubeTaskStatus.textContent =
+        "Reward credited successfully! Click Next for another video.";
+
+});
+
+
+/* USER CLICKS NEXT */
+
+youtubeNextButton.addEventListener("click", async function () {
+
+    if (!youtubeRewarded) {
+        return;
+    }
+
+    // Move to the next video. Cycle back to the beginning when needed.
+    currentYoutubeIndex++;
+
+    if (currentYoutubeIndex >= youtubeTasks.length) {
+
+        currentYoutubeIndex = 0;
+
+    }
+
+    await loadYoutubeTask();
+
+});
+
+
+/* USER CLOSES YOUTUBE WINDOW */
+
+youtubeTaskBack.addEventListener("click", function () {
+
+    pauseYoutubeCountdown();
+
+    if (youtubePlayer) {
+
+        youtubePlayer.pauseVideo();
+
+    }
+
+    youtubeTaskWindow.style.display = "none";
+
+});
+
 
     </script>
 
