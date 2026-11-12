@@ -545,6 +545,37 @@
     text-align: center;
 }
 
+/* FULL-SCREEN YOUTUBE PLAYER ON PHONES */
+
+@media (max-width: 700px) {
+
+    #youtubeTaskWindow .task-window-content {
+        width: 100vw;
+        max-width: none;
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    #youtubeTaskWindow .youtube-task-body {
+        padding: 12px;
+        gap: 14px;
+    }
+
+    #youtubeTaskWindow .youtube-player-box {
+        width: 100%;
+        max-width: none;
+        flex: 0 0 auto;
+        aspect-ratio: 16 / 9;
+    }
+
+    #youtubeTaskWindow .youtube-player-box iframe {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+}
+
         @media (max-width: 700px) {
 
             .task-window {
