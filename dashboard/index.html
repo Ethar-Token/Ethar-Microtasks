@@ -853,7 +853,7 @@ if (window.innerWidth <= 767) {
                 <div class="task-bottom">
 
                     <span class="reward">
-                        $0.02 - $1.50 per minute
+                        $0.02 - $1.50
                     </span>
 
                 <button id="watchYoutubeButton" class="task-button">
@@ -2647,8 +2647,8 @@ async function prepareYoutubePlayer(videoId) {
 
             youtubePlayer = new YT.Player("youtubePlayer", {
 
-                width: "100%",
-                height: "100%",
+                width: document.querySelector(".youtube-player-box").clientWidth,
+                height: document.querySelector(".youtube-player-box").clientHeight,
 
                 videoId: videoId,
 
