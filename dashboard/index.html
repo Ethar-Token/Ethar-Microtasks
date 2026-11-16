@@ -518,15 +518,24 @@
     overflow: hidden;
     background: #fff;
     border-top: 1px solid #f1c8d4;
-}
-
-.website-native-ad.visible {
-    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 #websiteNativeAdContainer {
     width: 100%;
     text-align: center;
+}
+
+#websiteAdTimer {
+    display: none;
+    color: #68414d;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.website-native-ad.visible #websiteAdTimer {
+    display: block;
 }
 
 @media (max-width: 700px) {
@@ -1195,6 +1204,7 @@ if (window.innerWidth <= 767) {
 <div class="website-native-ad" id="websiteNativeAd">
 
     <div id="websiteNativeAdContainer"></div>
+    <div id="websiteAdTimer">Please wait...</div>
 
 </div>
 
@@ -1980,9 +1990,11 @@ function loadWebsiteTask() {
 
     // Cancel any previous countdown.
     if (websiteUnlockTimer !== null) {
-        clearTimeout(websiteUnlockTimer);
+        clearInterval(websiteUnlockTimer);
         websiteUnlockTimer = null;
     }
+
+    document.getElementById("websiteAdTimer").textContent = "Please wait...";
 
     // Hide the ad until the visitor reaches the bottom again.
     document.getElementById("websiteNativeAd")
@@ -2001,62 +2013,60 @@ function loadWebsiteTask() {
 
 window.addEventListener("message", function (event) {
 
-    // Accept messages only from the website currently displayed.
-    if (event.source !== taskWebsite.contentWindow) {
-        return;
-    }
+    if (event.source !== taskWebsite.contentWindow) return;
 
     if (
         event.data &&
         event.data.type === "MICROTASK_BOTTOM_REACHED"
     ) {
+        if (websiteUnlockTimer !== null || taskCompleted) return;
 
-        // Prevent multiple countdowns.
-        if (websiteUnlockTimer !== null || taskCompleted) {
-            return;
-        }
-
-        // Show the native ad.
         const adBox = document.getElementById("websiteNativeAd");
+        const adContainer = document.getElementById("websiteNativeAdContainer");
+        const timerDisplay = document.getElementById("websiteAdTimer");
 
+        // Show the ad area and countdown.
         adBox.classList.add("visible");
 
-        // Load the ad script only once.
+        // Load the ad script once, outside its target container.
         if (!websiteAdLoaded) {
-
             websiteAdLoaded = true;
 
             const adScript = document.createElement("script");
-
             adScript.async = true;
             adScript.setAttribute("data-cfasync", "false");
+            adScript.src = "https://bauval.org/21/f719afe2dcacea80de174953ae5c62da";
 
-            adScript.src =
-                "https://bauval.org/21/f719afe2dcacea80de174953ae5c62da";
-
-            document.getElementById("websiteNativeAdContainer")
-                .appendChild(adScript);
-
+            adBox.insertBefore(adScript, adContainer);
         }
 
         // Random waiting period between 5 and 7 seconds.
-        const waitingTime =
-            Math.floor(Math.random() * 3000) + 5000;
+        let remainingSeconds = Math.floor(Math.random() * 3) + 5;
 
-        websiteUnlockTimer = setTimeout(function () {
+        timerDisplay.textContent =
+            `Please wait ${remainingSeconds} seconds...`;
 
-            taskCompleted = true;
+        websiteUnlockTimer = setInterval(function () {
 
-            doneButton.disabled = false;
+            remainingSeconds--;
 
-            websiteUnlockTimer = null;
+            if (remainingSeconds > 0) {
+                timerDisplay.textContent =
+                    `Please wait ${remainingSeconds} seconds...`;
+            } else {
+                clearInterval(websiteUnlockTimer);
+                websiteUnlockTimer = null;
 
-        }, waitingTime);
+                timerDisplay.textContent = "You can now complete this task.";
 
+                taskCompleted = true;
+                doneButton.disabled = false;
+            }
+
+        }, 1000);
     }
 
 });
-
 
 /* DONE */
 
