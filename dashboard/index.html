@@ -1203,7 +1203,7 @@ if (window.innerWidth <= 767) {
 
 <div class="website-native-ad" id="websiteNativeAd">
 
-    <div id="websiteNativeAdContainer"></div>
+    <div id="container-f719afe2dcacea80de174953ae5c62da"></div>
     <div id="websiteAdTimer">Please wait...</div>
 
 </div>
@@ -2028,16 +2028,22 @@ window.addEventListener("message", function (event) {
         // Show the ad area and countdown.
         adBox.classList.add("visible");
 
-        // Load the ad script once, outside its target container.
+        // Load the native ad script only once.
         if (!websiteAdLoaded) {
             websiteAdLoaded = true;
+
+            const adContainer = document.getElementById(
+                "container-f719afe2dcacea80de174953ae5c62da"
+            );
 
             const adScript = document.createElement("script");
             adScript.async = true;
             adScript.setAttribute("data-cfasync", "false");
-            adScript.src = "https://bauval.org/21/f719afe2dcacea80de174953ae5c62da";
+            adScript.src =
+                "https://bauval.org/21/f719afe2dcacea80de174953ae5c62da";
 
-            adBox.insertBefore(adScript, adContainer);
+            // Place the script before its matching ad container.
+            adContainer.parentNode.insertBefore(adScript, adContainer);
         }
 
         // Random waiting period between 5 and 7 seconds.
