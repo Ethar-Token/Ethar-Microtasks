@@ -1968,6 +1968,49 @@ startWebsiteTask.addEventListener("click", async function () {
 });
 
 
+
+/* RESET THE ENTIRE WEBSITE AD AREA */
+
+function resetWebsiteAd() {
+
+    // Stop any timer left over from the previous task.
+    if (websiteUnlockTimer !== null) {
+        clearInterval(websiteUnlockTimer);
+        websiteUnlockTimer = null;
+    }
+
+    // Remove the previous ad script.
+    const oldScript = document.getElementById("websiteNativeAdScript");
+
+    if (oldScript) {
+        oldScript.remove();
+    }
+
+    // Create a completely fresh ad container in the same position.
+    const oldContainer = document.getElementById(
+        "container-f719afe2dcacea80de174953ae5c62da"
+    );
+
+    const newContainer = document.createElement("div");
+
+    newContainer.id = "container-f719afe2dcacea80de174953ae5c62da";
+
+    if (oldContainer) {
+        oldContainer.replaceWith(newContainer);
+    }
+
+    // Hide the ad until the new website reaches its bottom.
+    document.getElementById("websiteNativeAd")
+        .classList.remove("visible");
+
+    document.getElementById("websiteAdTimer").textContent =
+        "Please wait...";
+
+    // Allow the next task to load a fresh ad.
+    websiteAdLoaded = false;
+}
+
+
 /* LOAD CURRENT WEBSITE */
 
 function loadWebsiteTask() {
@@ -1978,65 +2021,74 @@ function loadWebsiteTask() {
 
     taskCompleted = false;
 
-    // Cancel any previous countdown.
-    if (websiteUnlockTimer !== null) {
-        clearInterval(websiteUnlockTimer);
-        websiteUnlockTimer = null;
-    }
+    // Completely reset the previous task and ad.
+    resetWebsiteAd();
 
-    document.getElementById("websiteAdTimer").textContent = "Please wait...";
-
-    // Hide the ad until the visitor reaches the bottom again.
-    document.getElementById("websiteNativeAd")
-        .classList.remove("visible");
-
+    // Reset the task buttons.
     doneButton.disabled = true;
     nextButton.disabled = true;
 
     doneButton.textContent = "Done";
 
+    // Load the new website into the same task window.
     taskWebsite.src = task.url;
-
 }
 
-/* WEBSITE BOTTOM REACHED - SHOW AD AND START TIMER */
+
+/* WEBSITE BOTTOM REACHED - SHOW A FRESH AD AND START TIMER */
 
 window.addEventListener("message", function (event) {
 
+    // Only accept messages from the website currently displayed.
     if (event.source !== taskWebsite.contentWindow) return;
 
     if (
         event.data &&
         event.data.type === "MICROTASK_BOTTOM_REACHED"
     ) {
+
+        // Do not start another timer for the same task.
         if (websiteUnlockTimer !== null || taskCompleted) return;
 
         const adBox = document.getElementById("websiteNativeAd");
-        const adContainer = document.getElementById("websiteNativeAdContainer");
+
+        const adContainer = document.getElementById(
+            "container-f719afe2dcacea80de174953ae5c62da"
+        );
+
         const timerDisplay = document.getElementById("websiteAdTimer");
 
-        // Show the ad area and countdown.
+        // Reveal the ad area AFTER the website scroll event.
         adBox.classList.add("visible");
 
-        // Load the native ad script only once.
+        // Load the ad for this task.
         if (!websiteAdLoaded) {
+
             websiteAdLoaded = true;
 
-            const adContainer = document.getElementById(
-                "container-f719afe2dcacea80de174953ae5c62da"
-            );
-
             const adScript = document.createElement("script");
+
+            adScript.id = "websiteNativeAdScript";
             adScript.async = true;
             adScript.setAttribute("data-cfasync", "false");
+
             adScript.src =
                 "https://bauval.org/21/f719afe2dcacea80de174953ae5c62da";
 
-            // Place the script before its matching ad container.
-            adContainer.parentNode.insertBefore(adScript, adContainer);
+            // Allow another attempt if the ad script fails to load.
+            adScript.onerror = function () {
+                websiteAdLoaded = false;
+                console.error("Website native ad failed to load.");
+            };
+
+            // Load the script beside its matching ad container.
+            adContainer.parentNode.insertBefore(
+                adScript,
+                adContainer
+            );
         }
 
-        // Random waiting period between 5 and 7 seconds.
+        // Start a fresh 5–7 second countdown.
         let remainingSeconds = Math.floor(Math.random() * 3) + 5;
 
         timerDisplay.textContent =
@@ -2047,15 +2099,21 @@ window.addEventListener("message", function (event) {
             remainingSeconds--;
 
             if (remainingSeconds > 0) {
+
                 timerDisplay.textContent =
                     `Please wait ${remainingSeconds} seconds...`;
+
             } else {
+
                 clearInterval(websiteUnlockTimer);
+
                 websiteUnlockTimer = null;
 
-                timerDisplay.textContent = "You can now complete this task.";
+                timerDisplay.textContent =
+                    "You can now complete this task.";
 
                 taskCompleted = true;
+
                 doneButton.disabled = false;
             }
 
@@ -2063,6 +2121,7 @@ window.addEventListener("message", function (event) {
     }
 
 });
+
 
 /* DONE */
 
@@ -2109,20 +2168,31 @@ doneButton.addEventListener("click", async function () {
 });
 
 
-/* NEXT */
+
+/* NEXT - LOAD A COMPLETELY NEW TASK */
 
 nextButton.addEventListener("click", function () {
 
-    const randomIndex = Math.floor(
-        Math.random() * websiteTasks.length
-    );
+    // Avoid selecting the immediately previous website.
+    if (websiteTasks.length > 1) {
 
+        let randomIndex;
 
-    currentTaskIndex = randomIndex;
+        do {
+            randomIndex = Math.floor(
+                Math.random() * websiteTasks.length
+            );
 
+        } while (randomIndex === currentTaskIndex);
+
+        currentTaskIndex = randomIndex;
+    }
+
+    // Reset everything and load the next website.
     loadWebsiteTask();
 
 });
+
 
 
 /* BACK TO DASHBOARD */
