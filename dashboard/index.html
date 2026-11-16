@@ -1921,6 +1921,7 @@ let taskCompleted = false;
 
 let websiteUnlockTimer = null;
 let websiteAdLoaded = false;
+let websitePageReady = false;
 
 
 /* START TASK */
@@ -2014,23 +2015,25 @@ function resetWebsiteAd() {
 /* LOAD CURRENT WEBSITE */
 
 function loadWebsiteTask() {
-
     const task = websiteTasks[currentTaskIndex];
-
     currentTaskId = task.id;
-
     taskCompleted = false;
+    websitePageReady = false;
 
-    // Completely reset the previous task and ad.
+    // Clear the previous timer and completely reset the ad slot.
     resetWebsiteAd();
 
-    // Reset the task buttons.
+    // Reset the buttons for the new task.
     doneButton.disabled = true;
     nextButton.disabled = true;
-
     doneButton.textContent = "Done";
 
-    // Load the new website into the same task window.
+    // Wait until the new website has loaded before reopening the window.
+    taskWebsite.onload = function () {
+        websitePageReady = true;
+        taskWindow.style.display = "flex";
+    };
+
     taskWebsite.src = task.url;
 }
 
@@ -2040,7 +2043,7 @@ function loadWebsiteTask() {
 window.addEventListener("message", function (event) {
 
     // Only accept messages from the website currently displayed.
-    if (event.source !== taskWebsite.contentWindow) return;
+    if (event.source !== taskWebsite.contentWindow || !websitePageReady) return;
 
     if (
         event.data &&
@@ -2173,16 +2176,17 @@ doneButton.addEventListener("click", async function () {
 
 nextButton.addEventListener("click", function () {
 
-    // Avoid selecting the immediately previous website.
-    if (websiteTasks.length > 1) {
+    // Close the task window immediately.
+    taskWindow.style.display = "none";
 
+    // Select another website, avoiding an immediate repeat.
+    if (websiteTasks.length > 1) {
         let randomIndex;
 
         do {
             randomIndex = Math.floor(
                 Math.random() * websiteTasks.length
             );
-
         } while (randomIndex === currentTaskIndex);
 
         currentTaskIndex = randomIndex;
@@ -2190,7 +2194,6 @@ nextButton.addEventListener("click", function () {
 
     // Reset everything and load the next website.
     loadWebsiteTask();
-
 });
 
 
