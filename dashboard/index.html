@@ -511,37 +511,27 @@
     flex: 0 0 auto;
     width: 100%;
     min-height: 90px;
-    max-height: 150px;
     padding: 8px;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
     background: #fff;
     border-top: 1px solid #f1c8d4;
-    flex-direction: column;
-    gap: 8px;
 }
 
-#websiteNativeAdContainer {
-    width: 100%;
-    text-align: center;
+.website-native-ad.visible {
+    display: flex;
 }
 
-#websiteAdTimer {
-    display: none;
-    color: #68414d;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.website-native-ad.visible #websiteAdTimer {
+#container-f719afe2dcacea80de174953ae5c62da {
     display: block;
+    width: 100%;
+    min-height: 90px;
+    text-align: center;
 }
 
 @media (max-width: 700px) {
     .website-native-ad {
         min-height: 90px;
-        max-height: 120px;
     }
 }
 
