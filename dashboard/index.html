@@ -504,6 +504,38 @@
             cursor: not-allowed;
         }
 
+/* WEBSITE TASK NATIVE AD */
+
+.website-native-ad {
+    display: none;
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 90px;
+    max-height: 150px;
+    padding: 8px;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: #fff;
+    border-top: 1px solid #f1c8d4;
+}
+
+.website-native-ad.visible {
+    display: flex;
+}
+
+#websiteNativeAdContainer {
+    width: 100%;
+    text-align: center;
+}
+
+@media (max-width: 700px) {
+    .website-native-ad {
+        min-height: 90px;
+        max-height: 120px;
+    }
+}
+
 /* YOUTUBE TASK WINDOW */
 
 .youtube-task-body {
@@ -1157,6 +1189,14 @@ if (window.innerWidth <= 767) {
             class="task-website"
             src="about:blank">
         </iframe>
+
+<!-- NATIVE AD SHOWN AFTER WEBSITE SCROLL -->
+
+<div class="website-native-ad" id="websiteNativeAd">
+
+    <div id="websiteNativeAdContainer"></div>
+
+</div>
 
 
         <div class="task-window-footer">
@@ -1879,6 +1919,9 @@ let currentTaskIndex = 0;
 let currentTaskId = null;
 let taskCompleted = false;
 
+let websiteUnlockTimer = null;
+let websiteAdLoaded = false;
+
 
 /* START TASK */
 
@@ -1935,26 +1978,80 @@ function loadWebsiteTask() {
 
     taskCompleted = false;
 
+    // Cancel any previous countdown.
+    if (websiteUnlockTimer !== null) {
+        clearTimeout(websiteUnlockTimer);
+        websiteUnlockTimer = null;
+    }
+
+    // Hide the ad until the visitor reaches the bottom again.
+    document.getElementById("websiteNativeAd")
+        .classList.remove("visible");
+
     doneButton.disabled = true;
     nextButton.disabled = true;
+
+    doneButton.textContent = "Done";
 
     taskWebsite.src = task.url;
 
 }
 
-
-/* WEBSITE REPORTS THAT USER REACHED BOTTOM */
+/* WEBSITE BOTTOM REACHED - SHOW AD AND START TIMER */
 
 window.addEventListener("message", function (event) {
+
+    // Accept messages only from the website currently displayed.
+    if (event.source !== taskWebsite.contentWindow) {
+        return;
+    }
 
     if (
         event.data &&
         event.data.type === "MICROTASK_BOTTOM_REACHED"
     ) {
 
-        taskCompleted = true;
+        // Prevent multiple countdowns.
+        if (websiteUnlockTimer !== null || taskCompleted) {
+            return;
+        }
 
-        doneButton.disabled = false;
+        // Show the native ad.
+        const adBox = document.getElementById("websiteNativeAd");
+
+        adBox.classList.add("visible");
+
+        // Load the ad script only once.
+        if (!websiteAdLoaded) {
+
+            websiteAdLoaded = true;
+
+            const adScript = document.createElement("script");
+
+            adScript.async = true;
+            adScript.setAttribute("data-cfasync", "false");
+
+            adScript.src =
+                "https://bauval.org/21/f719afe2dcacea80de174953ae5c62da";
+
+            document.getElementById("websiteNativeAdContainer")
+                .appendChild(adScript);
+
+        }
+
+        // Random waiting period between 5 and 7 seconds.
+        const waitingTime =
+            Math.floor(Math.random() * 3000) + 5000;
+
+        websiteUnlockTimer = setTimeout(function () {
+
+            taskCompleted = true;
+
+            doneButton.disabled = false;
+
+            websiteUnlockTimer = null;
+
+        }, waitingTime);
 
     }
 
