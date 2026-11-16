@@ -530,9 +530,10 @@
 /* Vertical layout for YouTube Shorts */
 
 .youtube-player-box.youtube-short {
-    width: min(100%, 360px, 38vh);
-    max-width: none;
+    width: min(100%, 420px);
+    max-width: 420px;
     aspect-ratio: 9 / 16;
+    height: auto;
     flex: 0 0 auto;
 }
 
@@ -554,33 +555,67 @@
     text-align: center;
 }
 
-/* FULL-SCREEN YOUTUBE PLAYER ON PHONES */
+/* MOBILE YOUTUBE PLAYER FIX */
 
 @media (max-width: 700px) {
 
+    #youtubeTaskWindow {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        height: 100dvh;
+        padding: 0;
+        overflow: hidden;
+    }
+
     #youtubeTaskWindow .task-window-content {
-        width: 100vw;
-        max-width: none;
-        height: 100vh;
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
+        height: 100dvh;
+        max-height: 100dvh;
         border-radius: 0;
+        display: flex;
+        flex-direction: column;
     }
 
     #youtubeTaskWindow .youtube-task-body {
-        padding: 12px;
-        gap: 14px;
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        overflow-y: auto;
     }
 
     #youtubeTaskWindow .youtube-player-box {
         width: 100%;
         max-width: none;
-        flex: 0 0 auto;
         aspect-ratio: 16 / 9;
+        flex: 0 0 auto;
+    }
+
+    #youtubeTaskWindow .youtube-player-box.youtube-short {
+        width: min(100%, calc((100dvh - 230px) * 9 / 16));
+        max-width: 420px;
+        aspect-ratio: 9 / 16;
+        flex: 0 0 auto;
     }
 
     #youtubeTaskWindow .youtube-player-box iframe {
         display: block;
         width: 100% !important;
         height: 100% !important;
+    }
+
+    #youtubeTaskWindow .task-window-footer {
+        flex: 0 0 auto;
+        padding: 12px;
     }
 
 }
@@ -2685,6 +2720,8 @@ async function prepareYoutubePlayer(videoId) {
 
         youtubePlayerReadyPromise = new Promise((resolve) => {
 
+            const playerBox = document.querySelector(".youtube-player-box");
+
             youtubePlayer = new YT.Player("youtubePlayer", {
 
                 width: document.querySelector(".youtube-player-box").clientWidth,
@@ -2728,6 +2765,13 @@ async function prepareYoutubePlayer(videoId) {
 
     // Resize the player to fit the current video's layout.
     const playerBox = document.querySelector(".youtube-player-box");
+
+    // Wait for the mobile layout to finish resizing.
+    await new Promise(resolve => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(resolve);
+        });
+    });
 
     youtubePlayer.setSize(
         playerBox.clientWidth,
