@@ -2074,9 +2074,12 @@ window.addEventListener("message", function (event) {
         const adFrame = document.createElement("iframe");
 
         adFrame.style.width = "100%";
-        adFrame.style.height = "250px";
+        adFrame.style.aspectRatio = "2 / 1";
+        adFrame.style.height = "auto";
+        adFrame.style.minHeight = "0";
         adFrame.style.border = "0";
         adFrame.style.display = "block";
+        adFrame.style.overflow = "hidden";
         adFrame.setAttribute("scrolling", "no");
         adFrame.setAttribute("title", "Advertisement");
 
