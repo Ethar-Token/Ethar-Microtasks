@@ -2069,14 +2069,43 @@ window.addEventListener("message", function (event) {
 
             websiteAdLoaded = true;
 
-            const adScript = document.createElement("script");
+            
+        // Create a completely fresh iframe for this advertisement.
+        const adFrame = document.createElement("iframe");
 
-            adScript.id = "websiteNativeAdScript";
-            adScript.async = true;
-            adScript.setAttribute("data-cfasync", "false");
+        adFrame.style.width = "100%";
+        adFrame.style.height = "250px";
+        adFrame.style.border = "0";
+        adFrame.style.display = "block";
+        adFrame.setAttribute("scrolling", "no");
+        adFrame.setAttribute("title", "Advertisement");
 
-            adScript.src =
-                "https://bauval.org/21/f719afe2dcacea80de174953ae5c62da";
+        // Put the new iframe inside the existing ad container.
+        adContainer.innerHTML = "";
+        adContainer.appendChild(adFrame);
+
+        // Execute the provider's original ad code in the fresh iframe.
+        const adDocument = adFrame.contentDocument;
+
+        adDocument.open();
+        adDocument.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+            </head>
+            <body style="margin:0;padding:0;">
+                <script
+                    async="async"
+                    data-cfasync="false"
+                    src="https://bauval.org/21/f719afe2dcacea80de174953ae5c62da">
+                <\/script>
+                <div id="container-f719afe2dcacea80de174953ae5c62da"></div>
+            </body>
+            </html>
+        `);
+        adDocument.close();
+
 
             // Allow another attempt if the ad script fails to load.
             adScript.onerror = function () {
