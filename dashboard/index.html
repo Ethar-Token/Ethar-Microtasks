@@ -2070,33 +2070,37 @@ window.addEventListener("message", function (event) {
             websiteAdLoaded = true;
 
             
-        // Create a completely fresh iframe for this advertisement.
-        const adFrame = document.createElement("iframe");
 
-        adFrame.style.width = "100%";
-        adFrame.style.aspectRatio = "2 / 1";
-        adFrame.style.height = "300px";
-        adFrame.style.minHeight = "0";
-        adFrame.style.border = "0";
-        adFrame.style.display = "block";
-        adFrame.style.overflow = "hidden";
-        adFrame.setAttribute("scrolling", "no");
-        adFrame.setAttribute("title", "Advertisement");
+// Create a completely fresh iframe for this advertisement.
+const adFrame = document.createElement("iframe");
 
-        // Put the new iframe inside the existing ad container.
-        adContainer.innerHTML = "";
-        adContainer.appendChild(adFrame);
+// Give the ad a responsive height.
+adFrame.style.width = "100%";
+adFrame.style.height =
+    window.innerWidth <= 600 ? "400px" : "300px";
 
-        // Execute the provider's original ad code in the fresh iframe.
-        const adDocument = adFrame.contentDocument;
+adFrame.style.border = "0";
+adFrame.style.display = "block";
+adFrame.style.overflow = "hidden";
 
-        adDocument.open();
+adFrame.setAttribute("scrolling", "no");
+adFrame.setAttribute("title", "Advertisement");
+
+// Insert the new iframe into the existing ad container.
+adContainer.innerHTML = "";
+adContainer.appendChild(adFrame);
+
+// Load the provider's original ad code inside the fresh iframe.
+const adDocument = adFrame.contentDocument;
+
+adDocument.open();
 
 adDocument.write(`
     <!DOCTYPE html>
     <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+
         <style>
             * {
                 box-sizing: border-box;
@@ -2106,21 +2110,30 @@ adDocument.write(`
                 margin: 0;
                 padding: 0;
                 width: 100%;
-                height: 300px;
+                height: 500px;
                 overflow: hidden;
             }
 
-            /* Scale the complete ad unit on mobile. */
+            /* Desktop: fit the complete ad into 300px. */
+            #container-f719afe2dcacea80de174953ae5c62da {
+                width: 166.6667%;
+                min-height: 500px;
+                transform: scale(0.6);
+                transform-origin: top left;
+            }
+
+            /* Mobile: fit the complete ad into 400px. */
             @media (max-width: 600px) {
                 #container-f719afe2dcacea80de174953ae5c62da {
-                    transform: scale(0.5);
-                    transform-origin: top left;
-                    width: 200%;
+                    width: 125%;
+                    transform: scale(0.8);
                 }
             }
         </style>
     </head>
+
     <body>
+
         <script
             async="async"
             data-cfasync="false"
@@ -2128,24 +2141,13 @@ adDocument.write(`
         <\/script>
 
         <div id="container-f719afe2dcacea80de174953ae5c62da"></div>
+
     </body>
     </html>
 `);
 
-        adDocument.close();
+adDocument.close();
 
-
-            // Allow another attempt if the ad script fails to load.
-            adScript.onerror = function () {
-                websiteAdLoaded = false;
-                console.error("Website native ad failed to load.");
-            };
-
-            // Load the script beside its matching ad container.
-            adContainer.parentNode.insertBefore(
-                adScript,
-                adContainer
-            );
         }
 
         // Start a fresh 5–7 second countdown.
