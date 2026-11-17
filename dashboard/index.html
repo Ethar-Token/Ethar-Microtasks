@@ -2075,7 +2075,7 @@ window.addEventListener("message", function (event) {
 
         adFrame.style.width = "100%";
         adFrame.style.aspectRatio = "2 / 1";
-        adFrame.style.height = window.innerWidth <= 600 ? "180px" : "300px";
+        adFrame.style.height = "300px";
         adFrame.style.minHeight = "0";
         adFrame.style.border = "0";
         adFrame.style.display = "block";
@@ -2091,22 +2091,47 @@ window.addEventListener("message", function (event) {
         const adDocument = adFrame.contentDocument;
 
         adDocument.open();
-        adDocument.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1">
-            </head>
-            <body style="margin:0;padding:0;">
-                <script
-                    async="async"
-                    data-cfasync="false"
-                    src="https://bauval.org/21/f719afe2dcacea80de174953ae5c62da">
-                <\/script>
-                <div id="container-f719afe2dcacea80de174953ae5c62da"></div>
-            </body>
-            </html>
-        `);
+
+adDocument.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            html, body {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 300px;
+                overflow: hidden;
+            }
+
+            /* Scale the complete ad unit on mobile. */
+            @media (max-width: 600px) {
+                #container-f719afe2dcacea80de174953ae5c62da {
+                    transform: scale(0.6);
+                    transform-origin: top left;
+                    width: 166.6667%;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <script
+            async="async"
+            data-cfasync="false"
+            src="https://bauval.org/21/f719afe2dcacea80de174953ae5c62da">
+        <\/script>
+
+        <div id="container-f719afe2dcacea80de174953ae5c62da"></div>
+    </body>
+    </html>
+`);
+
         adDocument.close();
 
 
